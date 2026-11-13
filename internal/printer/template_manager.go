@@ -25,13 +25,46 @@ var (
 	tmplMgrOnce     sync.Once
 )
 
+// resolveTemplateDir mencari lokasi folder templates yang valid (CWD, ExeDir, atau ExeDir/..)
+func resolveTemplateDir(dir string) string {
+	candidates := []string{dir}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(exeDir, dir),
+			filepath.Join(exeDir, "..", dir),
+		)
+	}
+
+	// 1. Prioritaskan folder yang sudah memiliki file .json
+	for _, p := range candidates {
+		if stat, err := os.Stat(p); err == nil && stat.IsDir() {
+			entries, _ := os.ReadDir(p)
+			for _, e := range entries {
+				if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".json") {
+					return p
+				}
+			}
+		}
+	}
+
+	// 2. Folder yang ada meskipun belum berisi file
+	for _, p := range candidates {
+		if stat, err := os.Stat(p); err == nil && stat.IsDir() {
+			return p
+		}
+	}
+	return dir
+}
+
 // NewTemplateManager membuat instance TemplateManager baru untuk direktori tertentu
 func NewTemplateManager(dir string) *TemplateManager {
 	if dir == "" {
 		dir = "templates"
 	}
+	resolvedDir := resolveTemplateDir(dir)
 	tm := &TemplateManager{
-		templateDir: dir,
+		templateDir: resolvedDir,
 		templates:   make(map[string]*model.TemplateDefinition),
 	}
 	_ = tm.Reload()

@@ -1,0 +1,142 @@
+{
+  "id": "antrian",
+  "name": "Struk Kiosk Antrian 80mm",
+  "category": "struk",
+  "description": "Tiket antrian pendaftaran / poliklinik / farmasi rumah sakit",
+  "version": "1.0.0",
+  "updated_at": "2026-11-13T09:10:00Z",
+  "paper": {
+    "width_mm": 80,
+    "height_mm": 110,
+    "orientation": "portrait",
+    "margin_top": 2.0,
+    "margin_left": 2.0
+  },
+  "elements": [
+    {
+      "id": "el_instansi",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 5.0,
+      "content": "{{.instansi}}",
+      "font_family": "Times New Roman",
+      "font_size": 13,
+      "font_weight": "bold",
+      "align": "center"
+    },
+    {
+      "id": "el_alamat_rs",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 10.0,
+      "content": "Jln. Raya Jepara - Bangsri Km. 09, Jepara",
+      "font_family": "Arial",
+      "font_size": 8,
+      "font_weight": "normal",
+      "align": "center"
+    },
+    {
+      "id": "el_div1",
+      "type": "line",
+      "x_mm": 4.0,
+      "y_mm": 14.0,
+      "width_mm": 72.0,
+      "thickness_mm": 0.4,
+      "style": "solid"
+    },
+    {
+      "id": "el_tgl",
+      "type": "text",
+      "x_mm": 5.0,
+      "y_mm": 18.0,
+      "content": "Tanggal : {{.waktu}}",
+      "font_family": "Arial",
+      "font_size": 9,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_lbl_nomor",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 24.0,
+      "content": "Nomor Antrian :",
+      "font_family": "Times New Roman",
+      "font_size": 10,
+      "font_weight": "normal",
+      "align": "center"
+    },
+    {
+      "id": "el_nomor",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 38.0,
+      "content": "{{.nomor}}",
+      "font_family": "Times New Roman",
+      "font_size": 32,
+      "font_weight": "bold",
+      "align": "center"
+    },
+    {
+      "id": "el_kategori",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 47.0,
+      "content": "{{.kategori}}",
+      "font_family": "Arial",
+      "font_size": 11,
+      "font_weight": "bold",
+      "align": "center"
+    },
+    {
+      "id": "el_sisa",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 53.0,
+      "content": "Sisa Antrian: {{.sisa}} orang",
+      "font_family": "Arial",
+      "font_size": 9,
+      "font_weight": "normal",
+      "align": "center"
+    },
+    {
+      "id": "el_div2",
+      "type": "line",
+      "x_mm": 4.0,
+      "y_mm": 57.0,
+      "width_mm": 72.0,
+      "thickness_mm": 0.4,
+      "style": "solid"
+    },
+    {
+      "id": "el_pesan",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 62.0,
+      "content": "Silahkan menunggu nomor Anda dipanggil",
+      "font_family": "Arial",
+      "font_size": 8,
+      "font_weight": "normal",
+      "align": "center"
+    },
+    {
+      "id": "el_footer",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 66.0,
+      "content": "Budayakan Mengantri Demi Kenyamanan Bersama",
+      "font_family": "Arial",
+      "font_size": 7.5,
+      "font_weight": "normal",
+      "align": "center"
+    }
+  ],
+  "sample_data": {
+    "instansi": "RSU ASHAVIN",
+    "nomor": "U-002",
+    "kategori": "UMUM / PIHAK 3",
+    "waktu": "2026-11-13 09:00:00",
+    "sisa": 2
+  }
+}
+

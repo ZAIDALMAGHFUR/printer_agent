@@ -103,9 +103,9 @@
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('tabPrinters')">🖨️ Pemetaan Printer</button>
-            <button class="tab-btn" onclick="switchTab('tabDesigner')">🎨 Desainer Template Visual</button>
-            <button class="tab-btn" onclick="switchTab('tabSync')">🔄 Auto-Update & GitHub</button>
+            <button class="tab-btn active" onclick="switchTab('tabPrinters', this)">🖨️ Pemetaan Printer</button>
+            <button class="tab-btn" onclick="switchTab('tabDesigner', this)">🎨 Desainer Template Visual</button>
+            <button class="tab-btn" onclick="switchTab('tabSync', this)">🔄 Auto-Update & GitHub</button>
         </div>
 
         <!-- TAB 1: PEMETAAN PRINTER -->
@@ -302,11 +302,12 @@
         let selectedElIndex = -1;
         const MM_TO_PX = 7.0; // Faktor skala kanvas (1 mm = 7 px)
 
-        function switchTab(tabId) {
+        function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            if (btn) btn.classList.add('active');
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
             if (tabId === 'tabDesigner') loadTemplatesList();
             if (tabId === 'tabSync') loadSyncStatus();
         }
@@ -326,6 +327,7 @@
 
                 renderPrinterTable(currentConfig.printers);
                 loadHistory();
+                await loadTemplatesList();
             } catch (err) {
                 showToast("Gagal memuat data: " + err);
             }
@@ -578,11 +580,35 @@
                     div.style.borderTop = ((el.thickness_mm || 0.4) * 2) + 'px ' + (el.style || 'solid') + ' #000';
                 }
 
-                div.onclick = (e) => {
+                div.style.cursor = 'move';
+                div.onmousedown = (e) => {
                     e.stopPropagation();
                     selectedElIndex = idx;
                     renderCanvasElements();
                     renderPropEditor();
+                    renderElementList();
+
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const origX = el.x_mm;
+                    const origY = el.y_mm;
+
+                    function onMouseMove(moveEvent) {
+                        const dx = (moveEvent.clientX - startX) / MM_TO_PX;
+                        const dy = (moveEvent.clientY - startY) / MM_TO_PX;
+                        el.x_mm = Math.max(0, Math.round((origX + dx) * 2) / 2);
+                        el.y_mm = Math.max(0, Math.round((origY + dy) * 2) / 2);
+                        renderCanvasElements();
+                        renderPropEditor();
+                    }
+
+                    function onMouseUp() {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    }
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
                 };
 
                 canvas.appendChild(div);
@@ -708,6 +734,91 @@
             }
         }
 
+        function createNewTemplate() {
+            const name = prompt("Nama Template Baru:", "Label Pasien Baru");
+            if (!name || !name.trim()) return;
+            const id = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+            currentTemplate = {
+                id: id,
+                name: name.trim(),
+                category: "label",
+                description: "Template kustom " + name,
+                version: "1.0.0",
+                paper: {
+                    width_mm: 50,
+                    height_mm: 30,
+                    orientation: "portrait",
+                    margin_top: 1.5,
+                    margin_left: 2.0
+                },
+                elements: [
+                    {
+                        id: "el_1",
+                        type: "text",
+                        x_mm: 2.0,
+                        y_mm: 4.0,
+                        content: name.trim(),
+                        font_family: "Arial",
+                        font_size: 11.0,
+                        font_weight: "bold",
+                        align: "left"
+                    },
+                    {
+                        id: "el_2",
+                        type: "line",
+                        x_mm: 2.0,
+                        y_mm: 6.5,
+                        width_mm: 46.0,
+                        thickness_mm: 0.4,
+                        style: "solid"
+                    },
+                    {
+                        id: "el_3",
+                        type: "text",
+                        x_mm: 2.0,
+                        y_mm: 11.0,
+                        content: "No. RM : {{.no_mr}}",
+                        font_family: "Arial",
+                        font_size: 9.0,
+                        font_weight: "normal",
+                        align: "left"
+                    },
+                    {
+                        id: "el_4",
+                        type: "barcode",
+                        x_mm: 2.0,
+                        y_mm: 16.0,
+                        width_mm: 46.0,
+                        height_mm: 8.0,
+                        content: "{{.barcode}}",
+                        format: "CODE128"
+                    }
+                ],
+                sample_data: {
+                    no_mr: "RM-001234",
+                    barcode: "26110001"
+                }
+            };
+
+            const sel = document.getElementById('selTemplate');
+            const opt = document.createElement('option');
+            opt.value = currentTemplate.id;
+            opt.text = currentTemplate.name + " (" + currentTemplate.paper.width_mm + "x" + currentTemplate.paper.height_mm + "mm)";
+            opt.selected = true;
+            sel.appendChild(opt);
+
+            document.getElementById('paperWidth').value = currentTemplate.paper.width_mm;
+            document.getElementById('paperHeight').value = currentTemplate.paper.height_mm;
+            document.getElementById('sampleDataJson').value = JSON.stringify(currentTemplate.sample_data, null, 2);
+            updateCanvasSize();
+            renderCanvasElements();
+            renderElementList();
+            selectedElIndex = 0;
+            renderPropEditor();
+            showToast("Template baru '" + name + "' berhasil dibuat! Silahkan edit dan klik 'Simpan Template'.");
+        }
+
         async function saveCurrentTemplate() {
             if (!currentTemplate) return;
             try {
@@ -722,6 +833,8 @@
                 });
                 const data = await res.json();
                 showToast("Template '" + currentTemplate.name + "' berhasil disimpan!");
+                await loadTemplatesList();
+                document.getElementById('selTemplate').value = currentTemplate.id;
             } catch (err) {
                 showToast("Gagal menyimpan template: " + err);
             }

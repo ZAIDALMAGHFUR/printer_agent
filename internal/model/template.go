@@ -49,3 +49,4 @@ type TemplateDefinition struct {
 	Elements    []VisualElement        `json:"elements"`              // Daftar elemen desain
 	SampleData  map[string]interface{} `json:"sample_data,omitempty"` // Data sampel untuk live preview & test cetak
 }
+

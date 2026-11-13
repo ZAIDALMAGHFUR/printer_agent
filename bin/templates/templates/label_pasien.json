@@ -1,0 +1,104 @@
+{
+  "id": "label_pasien",
+  "name": "Label Pasien 50x30mm",
+  "category": "label",
+  "description": "Stiker barcode identitas pasien untuk RM / gelang / tabung lab",
+  "version": "1.0.0",
+  "updated_at": "2026-11-13T09:10:00Z",
+  "paper": {
+    "width_mm": 50,
+    "height_mm": 30,
+    "orientation": "portrait",
+    "margin_top": 1.5,
+    "margin_left": 2.0
+  },
+  "elements": [
+    {
+      "id": "el_nama",
+      "type": "text",
+      "x_mm": 2.0,
+      "y_mm": 3.0,
+      "content": "{{.nama}}",
+      "font_family": "Times New Roman",
+      "font_size": 11,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_mr",
+      "type": "text",
+      "x_mm": 2.0,
+      "y_mm": 7.0,
+      "content": "No. MR :   {{.no_mr}}   -   {{.tgl_lahir}}",
+      "font_family": "Times New Roman",
+      "font_size": 8.5,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_umur",
+      "type": "text",
+      "x_mm": 2.0,
+      "y_mm": 11.0,
+      "content": "Umur   :   {{.umur}}",
+      "font_family": "Times New Roman",
+      "font_size": 8.5,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_alamat",
+      "type": "text",
+      "x_mm": 2.0,
+      "y_mm": 15.0,
+      "content": "KP        :   {{.alamat}}",
+      "font_family": "Times New Roman",
+      "font_size": 8.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_barcode",
+      "type": "barcode",
+      "x_mm": 2.0,
+      "y_mm": 18.5,
+      "width_mm": 46.0,
+      "height_mm": 7.5,
+      "content": "{{.barcode}}",
+      "format": "CODE128",
+      "show_text": false
+    },
+    {
+      "id": "el_barcode_val",
+      "type": "text",
+      "x_mm": 2.0,
+      "y_mm": 28.2,
+      "content": "{{.barcode}}",
+      "font_family": "Times New Roman",
+      "font_size": 8.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_waktu",
+      "type": "text",
+      "x_mm": 28.0,
+      "y_mm": 28.2,
+      "content": "{{.waktu}}",
+      "font_family": "Times New Roman",
+      "font_size": 8.0,
+      "font_weight": "normal",
+      "align": "left"
+    }
+  ],
+  "sample_data": {
+    "nama": "NANI",
+    "no_mr": "00150515",
+    "tgl_lahir": "29/01/1934",
+    "umur": "92 tahun",
+    "alamat": "552 Don Roads East Jazminland, MA 46857",
+    "barcode": "2611000008",
+    "waktu": "2026-11-02 12:15:40"
+  }
+}
+

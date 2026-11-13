@@ -50,3 +50,4 @@ func PrintDocumentUniversal(printerName string, docName string, pdfFilePath stri
 
 	return nil
 }
+

@@ -53,6 +53,24 @@ var (
 	updaterOnce     sync.Once
 )
 
+// resolveTemplateDir mencari folder templates yang valid
+func resolveTemplateDir(dir string) string {
+	candidates := []string{dir}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(exeDir, dir),
+			filepath.Join(exeDir, "..", dir),
+		)
+	}
+	for _, p := range candidates {
+		if stat, err := os.Stat(p); err == nil && stat.IsDir() {
+			return p
+		}
+	}
+	return dir
+}
+
 // GetUpdater mengembalikan instance singleton UpdaterService
 func GetUpdater(repoURL string, templateDir string) *UpdaterService {
 	updaterOnce.Do(func() {
@@ -62,9 +80,10 @@ func GetUpdater(repoURL string, templateDir string) *UpdaterService {
 		if templateDir == "" {
 			templateDir = "templates"
 		}
+		resolvedDir := resolveTemplateDir(templateDir)
 		updaterInstance = &UpdaterService{
 			repoURL:      repoURL,
-			templateDir:  templateDir,
+			templateDir:  resolvedDir,
 			httpClient:   &http.Client{Timeout: 15 * time.Second},
 			syncInterval: 60 * time.Minute,
 			stopChan:     make(chan struct{}),
