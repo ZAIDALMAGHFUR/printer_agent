@@ -14,7 +14,8 @@ const (
 type PrinterMapping struct {
 	Name        string      `json:"name"`                  // Cth: CetakAntrian, Kwitansi, LabelFarmasi
 	Type        PrinterType `json:"type"`                  // usb, socket, relay, pdf
-	Target      string      `json:"target"`                // Nama printer Windows / IP:Port / URL Relay
+	Target      string      `json:"target"`                // Nama printer Windows / Printer Target Fisik
+	IP          string      `json:"ip,omitempty"`          // Alamat IP:Port / URL Relay jika menggunakan koneksi jaringan/relay
 	DriverType  string      `json:"driver_type"`           // escpos (thermal), tspl (tsc barcode), generic (a4)
 	PaperSize   string      `json:"paper_size,omitempty"`  // 80mm, 58mm, 50x30mm, A4
 	AutoCut     bool        `json:"auto_cut"`              // Apakah otomatis potong kertas

@@ -42,8 +42,9 @@ type PrintOptions struct {
 // PrintRequest adalah payload utama yang dikirim dari Web SIMRS ke Agent
 type PrintRequest struct {
 	RequestID     string                 `json:"request_id,omitempty"`     // ID unik request (cth: REQ-001)
-	PrinterTarget string                 `json:"printer_target"`            // Cth: CetakAntrian, Kwitansi, LabelFarmasi, Billing
-	DocumentType  string                 `json:"document_type,omitempty"`  // antrian, label, kwitansi, sep, billing
+	PrinterTarget string                 `json:"printer_target"`            // Cth: CetakAntrian, Kwitansi, BuktiRegistrasi, LabelFarmasi
+	PrinterName   string                 `json:"printer_name,omitempty"`   // Nama printer fisik spesifik jika ingin direct override (cth: EPSON LX-310)
+	DocumentType  string                 `json:"document_type,omitempty"`  // antrian, label, kwitansi, sep, billing, registrasi
 	Template      string                 `json:"template,omitempty"`       // antrian, resep_racikan, resep_non_racikan, etiket
 	Format        string                 `json:"format,omitempty"`         // lines (default), raw, html
 	Konten        []PrintLine            `json:"konten,omitempty"`         // Daftar baris (generic layout)

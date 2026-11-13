@@ -18,6 +18,15 @@
       "auto_cut": false,
       "description": "Dokumen rincian biaya / billing A4"
     },
+    "BuktiRegistrasi": {
+      "name": "BuktiRegistrasi",
+      "type": "usb",
+      "target": "EPSON LX-310",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false,
+      "description": "Printer dot-matrix bukti pendaftaran / registrasi (Epson LX-310)"
+    },
     "CetakAntrian": {
       "name": "CetakAntrian",
       "type": "usb",

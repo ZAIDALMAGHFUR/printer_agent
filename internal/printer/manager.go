@@ -60,18 +60,30 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 	// 1. Dapatkan mapping printer
 	mapping, exists := m.cfgMgr.GetPrinterMapping(req.PrinterTarget)
 	if !exists {
-		// Jika target tidak terdaftar, gunakan default USB atau PDF
+		// Jika target tidak terdaftar di config, cek apakah target/printer_name adalah nama printer fisik langsung
+		targetPrinter := req.PrinterTarget
+		if req.PrinterName != "" {
+			targetPrinter = req.PrinterName
+		}
+		driver := DetectDriver(req.PrinterTarget, targetPrinter, "")
 		mapping = model.PrinterMapping{
 			Name:       req.PrinterTarget,
 			Type:       model.PrinterTypeUSB,
-			Target:     GetDefaultPrinter(),
-			DriverType: "escpos",
+			Target:     targetPrinter,
+			DriverType: driver,
 			PaperSize:  "80mm",
-			AutoCut:    true,
+			AutoCut:    driver == "escpos",
+		}
+		if mapping.Target == "" {
+			mapping.Target = GetDefaultPrinter()
 		}
 		if mapping.Target == "" {
 			mapping.Type = model.PrinterTypePDF
 		}
+	} else if req.PrinterName != "" {
+		// Override target printer fisik jika request secara eksplisit menyertakan printer_name
+		mapping.Target = req.PrinterName
+		mapping.DriverType = DetectDriver(req.PrinterTarget, req.PrinterName, mapping.DriverType)
 	}
 
 	// 2. Jika opsi View = true, langsung jadikan PDF untuk preview di layar browser
@@ -100,9 +112,39 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 	switch mapping.Type {
 	case model.PrinterTypeRelay:
 		// Forward ke PC lain (Printer Sharing Antar-Agent)
-		log.Printf("[RELAY] Meneruskan cetak '%s' ke Agent di %s", req.PrinterTarget, mapping.Target)
-		resp, err := RelayPrintJob(mapping.Target, req, cfg.TimeoutSec)
+		relayHost := mapping.IP
+		if relayHost == "" {
+			relayHost = mapping.Target
+		}
+		// Jika mapping.Target adalah nama printer fisik (bukan IP/URL), teruskan sebagai req.PrinterName
+		if mapping.Target != "" && !strings.HasPrefix(mapping.Target, "http://") && !strings.Contains(mapping.Target, ":") {
+			req.PrinterName = mapping.Target
+		}
+		log.Printf("[RELAY] Meneruskan cetak '%s' ke Agent di %s (target printer: %s)", req.PrinterTarget, relayHost, req.PrinterName)
+		resp, err := RelayPrintJob(relayHost, req, cfg.TimeoutSec)
 		if err != nil {
+			// Cek apakah mapping.Target dapat dicetak langsung via spooler lokal (cth: printer sharing Windows)
+			log.Printf("[RELAY] Relay HTTP gagal (%v). Mencoba cetak via spooler lokal ke '%s'...", err, mapping.Target)
+			docName := req.DocumentType
+			if docName == "" {
+				docName = req.PrinterTarget
+			}
+			rawBytes, rawErr := m.buildRawBytes(req, mapping)
+			if rawErr == nil {
+				if spoolErr := PrintRawBytes(mapping.Target, docName, rawBytes); spoolErr == nil {
+					log.Printf("[RELAY] Berhasil dicetak via Spooler lokal ke '%s'", mapping.Target)
+					return &model.PrintResponse{
+						Status:        "success",
+						JobID:         req.RequestID,
+						Message:       fmt.Sprintf("Berhasil dicetak ke printer '%s'", mapping.Target),
+						TargetPrinter: mapping.Target,
+						TargetType:    string(model.PrinterTypeUSB),
+						DurationMs:    time.Since(start).Milliseconds(),
+						Timestamp:     time.Now().Format(time.RFC3339),
+					}, nil
+				}
+			}
+
 			// Jika PC sebelah mati/putus dan auto-save PDF aktif: fallback ke PDF lokal!
 			if cfg.AutoSavePDF {
 				log.Printf("[FALLBACK] Relay gagal (%v), fallback otomatis simpan PDF lokal", err)
@@ -111,7 +153,7 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 					return &model.PrintResponse{
 						Status:        "saved_pdf",
 						JobID:         req.RequestID,
-						Message:       fmt.Sprintf("Relay ke %s gagal, tersimpan aman sebagai PDF lokal", mapping.Target),
+						Message:       fmt.Sprintf("Relay ke %s gagal, tersimpan aman sebagai PDF lokal", relayHost),
 						TargetPrinter: "Local PDF Fallback",
 						TargetType:    string(model.PrinterTypePDF),
 						FilePath:      pdfPath,
@@ -126,13 +168,17 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 
 	case model.PrinterTypeSocket:
 		// Kirim langsung ke Network Printer (IP:Port via LAN/WiFi)
-		log.Printf("[SOCKET] Mengirim cetak '%s' ke Network Printer di %s", req.PrinterTarget, mapping.Target)
+		socketAddr := mapping.IP
+		if socketAddr == "" {
+			socketAddr = mapping.Target
+		}
+		log.Printf("[SOCKET] Mengirim cetak '%s' ke Network Printer di %s", req.PrinterTarget, socketAddr)
 		rawBytes, err := m.buildRawBytes(req, mapping)
 		if err != nil {
 			return nil, err
 		}
 
-		err = PrintRawSocket(mapping.Target, rawBytes, cfg.TimeoutSec)
+		err = PrintRawSocket(socketAddr, rawBytes, cfg.TimeoutSec)
 		if err != nil {
 			if cfg.AutoSavePDF {
 				log.Printf("[FALLBACK] Network Printer offline (%v), simpan PDF lokal", err)
@@ -291,6 +337,15 @@ func DetectDriver(targetName string, printerName string, configured string) stri
 		return "tspl"
 	}
 
+	// Cek apakah printer Dot-Matrix (Epson LX-300, LX-310, LQ-2190) atau Printer A4/Laser/Inkjet
+	if strings.Contains(p, "lx") || strings.Contains(p, "lq") ||
+		strings.Contains(p, "matrix") || strings.Contains(p, "dot") ||
+		strings.Contains(p, "laser") || strings.Contains(p, "deskjet") ||
+		strings.Contains(p, "canon") || strings.Contains(p, "hp ") ||
+		strings.Contains(p, "brother") {
+		return "generic"
+	}
+
 	if strings.Contains(p, "tm-") || strings.Contains(p, "t82") ||
 		strings.Contains(p, "t88") || strings.Contains(p, "epson tm") ||
 		strings.Contains(p, "thermal") || strings.Contains(p, "pos") ||
@@ -300,6 +355,12 @@ func DetectDriver(targetName string, printerName string, configured string) stri
 	}
 
 	// 2. Cek dari nama fungsi SIMRS
+	if strings.Contains(t, "registrasi") || strings.Contains(t, "billing") ||
+		strings.Contains(t, "sep") || strings.Contains(t, "laporan") ||
+		strings.Contains(t, "a4") {
+		return "generic"
+	}
+
 	if strings.Contains(t, "label") || strings.Contains(t, "barcode") ||
 		strings.Contains(t, "gelang") || strings.Contains(t, "farmasi") {
 		return "tspl"
@@ -310,7 +371,7 @@ func DetectDriver(targetName string, printerName string, configured string) stri
 		return "escpos"
 	}
 
-	return "escpos"
+	return "generic"
 }
 
 // downloadPDF mengunduh file PDF dari remote URL (cth: endpoint backend SIMRS) dan menyimpannya ke folder lokal

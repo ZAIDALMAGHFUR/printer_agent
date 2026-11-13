@@ -408,15 +408,16 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 22%;">Target SIMRS</th>
-                            <th style="width: 20%;">Tipe Koneksi</th>
-                            <th style="width: 28%;">Printer Fisik / Alamat</th>
-                            <th style="width: 18%;">Metode Cetak</th>
-                            <th style="width: 12%; text-align: center;">Aksi</th>
+                            <th style="width: 18%;">Target SIMRS</th>
+                            <th style="width: 16%;">Tipe Koneksi</th>
+                            <th style="width: 20%;">Alamat IP / Host</th>
+                            <th style="width: 22%;">Printer Fisik Target</th>
+                            <th style="width: 16%;">Metode Cetak</th>
+                            <th style="width: 8%; text-align: center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="printerTableBody">
-                        <tr><td colspan="5" style="text-align: center;">Memuat konfigurasi...</td></tr>
+                        <tr><td colspan="6" style="text-align: center;">Memuat konfigurasi...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1132,6 +1133,7 @@
             try {
                 const resPrinters = await fetch('/api/printers');
                 installedPrinters = await resPrinters.json();
+                updatePrinterDatalist();
 
                 const resCfg = await fetch('/api/config');
                 currentConfig = await resCfg.json();
@@ -1151,12 +1153,22 @@
             }
         }
 
+        function updatePrinterDatalist() {
+            let dl = document.getElementById('installedPrintersDatalist');
+            if (!dl) {
+                dl = document.createElement('datalist');
+                dl.id = 'installedPrintersDatalist';
+                document.body.appendChild(dl);
+            }
+            dl.innerHTML = (installedPrinters || []).map(pr => `<option value="${pr.name}">${pr.is_default ? '(Default)' : ''}</option>`).join('');
+        }
+
         function renderPrinterTable(printers) {
             const tbody = document.getElementById('printerTableBody');
             tbody.innerHTML = '';
             const keys = Object.keys(printers || {});
             if (keys.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada pemetaan printer.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Belum ada pemetaan printer.</td></tr>';
                 return;
             }
 
@@ -1168,18 +1180,19 @@
                     <td>
                         <select class="row-type" onchange="onTypeChange(this)">
                             <option value="usb" ${p.type === 'usb' ? 'selected' : ''}>🔌 Local USB</option>
-                            <option value="socket" ${p.type === 'socket' ? 'selected' : ''}>🌐 Network Socket (IP:9100)</option>
                             <option value="relay" ${p.type === 'relay' ? 'selected' : ''}>🔄 Relay PC Sebelah</option>
+                            <option value="socket" ${p.type === 'socket' ? 'selected' : ''}>🌐 Network Socket (IP:9100)</option>
                             <option value="pdf" ${p.type === 'pdf' ? 'selected' : ''}>📄 Virtual PDF</option>
                         </select>
                     </td>
+                    <td>${renderIPInput(p)}</td>
                     <td>${renderTargetInput(p)}</td>
                     <td>
                         <select class="row-driver">
                             <option value="auto" ${(!p.driver_type || p.driver_type === 'auto') ? 'selected' : ''}>✨ Universal (Driver Windows)</option>
-                            <option value="escpos" ${p.driver_type === 'escpos' ? 'selected' : ''}>🧾 RAW Struk (ESC/POS)</option>
+                            <option value="escpos" ${p.driver_type === 'escpos' ? 'selected' : ''}>🧾 RAW Struk Thermal (ESC/POS 80mm)</option>
                             <option value="tspl" ${p.driver_type === 'tspl' ? 'selected' : ''}>🏷️ RAW Barcode (TSPL)</option>
-                            <option value="generic" ${p.driver_type === 'generic' ? 'selected' : ''}>📄 Dokumen A4</option>
+                            <option value="generic" ${p.driver_type === 'generic' ? 'selected' : ''}>📄 Dokumen A4 / Dot Matrix (Epson LX)</option>
                         </select>
                     </td>
                     <td style="text-align: center;">
@@ -1192,43 +1205,100 @@
             ModernSelect.enhanceAll(tbody);
         }
 
+        function renderIPInput(p) {
+            const isNetwork = (p.type === 'relay' || p.type === 'socket');
+            let val = '';
+            let placeholder = '-';
+            if (p.type === 'relay') {
+                val = p.ip || (p.target && (p.target.startsWith('http') || p.target.includes(':')) ? p.target : '');
+                placeholder = 'http://192.168.1.50:1237';
+            } else if (p.type === 'socket') {
+                val = p.ip || (p.target && p.target.includes(':') ? p.target : '');
+                placeholder = '192.168.1.200:9100';
+            }
+            if (!isNetwork) {
+                return `<input type="text" class="row-ip" value="-" disabled style="background: #f1f5f9; text-align: center; color: #94a3b8; cursor: not-allowed;" title="Tidak membutuhkan alamat IP">`;
+            }
+            return `<input type="text" class="row-ip" value="${val}" placeholder="${placeholder}" title="Alamat IP / Host agent atau socket">`;
+        }
+
         function renderTargetInput(p) {
-            if (p.type === 'socket') return `<input type="text" class="row-target" value="${p.target || ''}" placeholder="192.168.1.200:9100">`;
-            if (p.type === 'relay') return `<input type="text" class="row-target" value="${p.target || ''}" placeholder="http://kispc.local:1237">`;
-            if (p.type === 'pdf') return `<input type="text" class="row-target" value="AutoSavePDF" disabled style="background:#f1f5f9;">`;
+            if (p.type === 'pdf') {
+                return `<input type="text" class="row-target" value="AutoSavePDF" disabled style="background: #f1f5f9; color: #94a3b8; cursor: not-allowed;" title="Otomatis disimpan sebagai PDF">`;
+            }
             
-            let options = installedPrinters.map(pr => `
-                <option value="${pr.name}" ${pr.name === p.target ? 'selected' : ''}>🖨️ ${pr.name} ${pr.is_default ? '(Default)' : ''}</option>
+            let targetVal = p.target || '';
+            if ((p.type === 'relay' || p.type === 'socket') && (targetVal.startsWith('http') || targetVal.includes(':'))) {
+                targetVal = p.printer_name || '';
+            }
+
+            let options = (installedPrinters || []).map(pr => `
+                <option value="${pr.name}">🖨️ ${pr.name} ${pr.is_default ? '(Default)' : ''}</option>
             `).join('');
-            if (!options) options = `<option value="">(Tidak ada printer terdeteksi)</option>`;
-            return `<select class="row-target">${options}</select>`;
+
+            return `
+                <div style="display: flex; gap: 4px; width: 100%; align-items: center;">
+                    <input type="text" class="row-target" list="installedPrintersDatalist" value="${targetVal}" placeholder="cth: EPSON LX-310" style="flex: 1;" title="Nama printer fisik di OS atau PC target">
+                    <select class="no-modern-select" style="width: auto; max-width: 90px; padding: 7px 6px; font-size: 11px; background: #f8fafc; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; cursor: pointer;" title="Pilih printer fisik terdeteksi" onchange="if(this.value){ const inp = this.previousElementSibling; inp.value = this.value; this.value = ''; }">
+                        <option value="">▼ Pilih</option>
+                        ${options}
+                    </select>
+                </div>
+            `;
         }
 
         function onTypeChange(sel) {
             const tr = sel.closest('tr');
-            tr.cells[2].innerHTML = renderTargetInput({ type: sel.value, target: '' });
-            ModernSelect.enhanceAll(tr.cells[2]);
+            const type = sel.value;
+            const ipCell = tr.cells[2];
+            const targetCell = tr.cells[3];
+
+            if (type === 'relay') {
+                const oldIP = tr.querySelector('.row-ip') ? tr.querySelector('.row-ip').value : '';
+                const keepIP = (oldIP === '-') ? '' : oldIP;
+                ipCell.innerHTML = `<input type="text" class="row-ip" value="${keepIP}" placeholder="http://192.168.1.50:1237" title="Alamat Agent di PC Sebelah">`;
+                const curTarget = tr.querySelector('.row-target') ? tr.querySelector('.row-target').value : '';
+                const keepTarget = (curTarget === 'AutoSavePDF') ? '' : curTarget;
+                targetCell.innerHTML = renderTargetInput({ type: 'relay', target: keepTarget });
+            } else if (type === 'socket') {
+                const oldIP = tr.querySelector('.row-ip') ? tr.querySelector('.row-ip').value : '';
+                const keepIP = (oldIP === '-') ? '' : oldIP;
+                ipCell.innerHTML = `<input type="text" class="row-ip" value="${keepIP}" placeholder="192.168.1.200:9100" title="IP dan Port Socket Printer">`;
+                const curTarget = tr.querySelector('.row-target') ? tr.querySelector('.row-target').value : '';
+                const keepTarget = (curTarget === 'AutoSavePDF') ? '' : curTarget;
+                targetCell.innerHTML = renderTargetInput({ type: 'socket', target: keepTarget });
+            } else if (type === 'pdf') {
+                ipCell.innerHTML = `<input type="text" class="row-ip" value="-" disabled style="background: #f1f5f9; text-align: center; color: #94a3b8; cursor: not-allowed;" title="Tidak membutuhkan alamat IP">`;
+                targetCell.innerHTML = `<input type="text" class="row-target" value="AutoSavePDF" disabled style="background: #f1f5f9; color: #94a3b8; cursor: not-allowed;" title="Otomatis disimpan sebagai PDF">`;
+            } else { // usb
+                ipCell.innerHTML = `<input type="text" class="row-ip" value="-" disabled style="background: #f1f5f9; text-align: center; color: #94a3b8; cursor: not-allowed;" title="Tidak membutuhkan alamat IP">`;
+                const curTarget = tr.querySelector('.row-target') ? tr.querySelector('.row-target').value : '';
+                const keepTarget = (curTarget === 'AutoSavePDF') ? '' : curTarget;
+                targetCell.innerHTML = renderTargetInput({ type: 'usb', target: keepTarget });
+            }
         }
 
         function addNewRow() {
             const tbody = document.getElementById('printerTableBody');
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><input type="text" class="row-name" placeholder="TargetBaru"></td>
+                <td><input type="text" class="row-name" placeholder="TargetBaru (cth: BuktiRegistrasi)"></td>
                 <td>
                     <select class="row-type" onchange="onTypeChange(this)">
                         <option value="usb">🔌 Local USB</option>
-                        <option value="socket">🌐 Network Socket (IP:9100)</option>
                         <option value="relay">🔄 Relay PC Sebelah</option>
+                        <option value="socket">🌐 Network Socket (IP:9100)</option>
                         <option value="pdf">📄 Virtual PDF</option>
                     </select>
                 </td>
+                <td>${renderIPInput({ type: 'usb' })}</td>
                 <td>${renderTargetInput({ type: 'usb', target: '' })}</td>
                 <td>
                     <select class="row-driver">
                         <option value="auto" selected>✨ Universal (Driver Windows)</option>
-                        <option value="escpos">🧾 RAW Struk (ESC/POS)</option>
+                        <option value="escpos">🧾 RAW Struk Thermal (ESC/POS 80mm)</option>
                         <option value="tspl">🏷️ RAW Barcode (TSPL)</option>
+                        <option value="generic">📄 Dokumen A4 / Dot Matrix (Epson LX)</option>
                     </select>
                 </td>
                 <td style="text-align: center;">
@@ -1248,13 +1318,21 @@
                 const nameInput = tr.querySelector('.row-name');
                 if (!nameInput || !nameInput.value.trim()) return;
                 const name = nameInput.value.trim();
+                const type = tr.querySelector('.row-type').value;
+                const ipInput = tr.querySelector('.row-ip');
+                const ipVal = (ipInput && ipInput.value.trim() !== '-') ? ipInput.value.trim() : '';
+                const targetInput = tr.querySelector('.row-target');
+                const targetVal = targetInput ? targetInput.value.trim() : '';
+                const driver = tr.querySelector('.row-driver').value;
+
                 newPrinters[name] = {
                     name: name,
-                    type: tr.querySelector('.row-type').value,
-                    target: tr.querySelector('.row-target').value,
-                    driver_type: tr.querySelector('.row-driver').value,
-                    auto_cut: true,
-                    paper_size: '80mm'
+                    type: type,
+                    ip: ipVal,
+                    target: targetVal,
+                    driver_type: driver,
+                    auto_cut: driver === 'escpos',
+                    paper_size: (driver === 'escpos') ? '80mm' : (driver === 'tspl' ? '50x30mm' : 'A4')
                 };
             });
 

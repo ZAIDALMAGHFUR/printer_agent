@@ -17,8 +17,24 @@ func RelayPrintJob(relayTarget string, req model.PrintRequest, timeoutSec int) (
 		timeoutSec = 5
 	}
 
-	targetURL := relayTarget
+	targetURL := strings.TrimSpace(relayTarget)
+
+	// Dukung format "NamaPrinter@IP/Host" atau "IP/Host#NamaPrinter"
+	if strings.Contains(targetURL, "@") {
+		parts := strings.SplitN(targetURL, "@", 2)
+		req.PrinterName = strings.TrimSpace(parts[0])
+		targetURL = strings.TrimSpace(parts[1])
+	} else if strings.Contains(targetURL, "#") {
+		parts := strings.SplitN(targetURL, "#", 2)
+		targetURL = strings.TrimSpace(parts[0])
+		req.PrinterName = strings.TrimSpace(parts[1])
+	}
+
 	if !strings.HasPrefix(targetURL, "http://") && !strings.HasPrefix(targetURL, "https://") {
+		// Jika tidak ada port dan tidak ada slash, beri default port agent :1237
+		if !strings.Contains(targetURL, ":") && !strings.Contains(targetURL, "/") {
+			targetURL = targetURL + ":1237"
+		}
 		targetURL = "http://" + targetURL
 	}
 	if !strings.Contains(targetURL, "/printgo/cetak") {
