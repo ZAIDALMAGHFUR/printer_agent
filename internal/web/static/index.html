@@ -358,6 +358,51 @@
 
         <!-- Tooltip Floating Guide Resize -->
         <div id="paperResizeTooltip" class="paper-resize-guide">80 mm × 130 mm</div>
+
+        <!-- Modal Buat Template Baru -->
+        <div id="newTemplateModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+            <div style="background: #ffffff; border-radius: 12px; width: 440px; max-width: 90%; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1); border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <h3 style="font-size: 17px; font-weight: 700; color: var(--text-main);">➕ Buat Template Baru</h3>
+                    <button onclick="closeNewTemplateModal()" style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
+                </div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Tentukan nama dan format ukuran kertas awal untuk template cetakan Anda.</p>
+                
+                <div class="prop-group">
+                    <label>Nama Template:</label>
+                    <input type="text" id="modalTmplName" placeholder="cth: Gelang Pasien Dewasa, Struk Laboratorium">
+                </div>
+                
+                <div class="prop-group">
+                    <label>Preset Format Kertas:</label>
+                    <select id="modalTmplPreset" onchange="onModalPresetChange(this.value)">
+                        <option value="80x130">Struk Bukti Pendaftaran / Tracer (80 × 130 mm)</option>
+                        <option value="80x115">Struk Antrian Kiosk (80 × 115 mm)</option>
+                        <option value="50x30">Label Pasien / Farmasi (50 × 30 mm)</option>
+                        <option value="25x280">Gelang Pasien Thermal (25 × 280 mm)</option>
+                        <option value="80x80">Struk Kasir Standar (80 × 80 mm)</option>
+                        <option value="custom">Kustom (Tentukan Sendiri)</option>
+                    </select>
+                </div>
+
+                <div class="grid-2" style="margin-bottom: 20px;">
+                    <div class="prop-group">
+                        <label>Lebar (mm):</label>
+                        <input type="number" id="modalTmplWidth" value="80" step="1" min="15" max="300">
+                    </div>
+                    <div class="prop-group">
+                        <label>Tinggi (mm):</label>
+                        <input type="number" id="modalTmplHeight" value="130" step="1" min="15" max="600">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn btn-outline" onclick="closeNewTemplateModal()">Batal</button>
+                    <button class="btn btn-primary" onclick="submitNewTemplate()">✨ Buat & Buka di Kanvas</button>
+                </div>
+            </div>
+        </div>
+
         <div id="toast">Notifikasi</div>
     </div>
 
@@ -667,12 +712,20 @@
 
         // ================= TEMPLATE DETAIL & CANVAS =================
         async function loadTemplateDetail(id) {
+            if (!id) return;
             try {
                 const res = await fetch('/printgo/templates?id=' + encodeURIComponent(id));
-                currentTemplate = await res.json();
+                if (!res.ok) {
+                    throw new Error("HTTP " + res.status + " - Template tidak ditemukan di server");
+                }
+                const data = await res.json();
+                if (!data || !data.paper) {
+                    throw new Error(data && data.error ? data.error : "Format data template tidak valid (paper tidak ditemukan)");
+                }
+                currentTemplate = data;
                 
-                document.getElementById('paperWidth').value = currentTemplate.paper.width_mm;
-                document.getElementById('paperHeight').value = currentTemplate.paper.height_mm;
+                document.getElementById('paperWidth').value = currentTemplate.paper.width_mm || 80;
+                document.getElementById('paperHeight').value = currentTemplate.paper.height_mm || 130;
                 document.getElementById('sampleDataJson').value = JSON.stringify(currentTemplate.sample_data || {}, null, 2);
                 
                 const badge = document.getElementById('paperSizeBadge');
@@ -688,7 +741,7 @@
                 selectedElIndex = -1;
                 renderPropEditor();
             } catch (err) {
-                showToast("Gagal memuat detail template: " + err);
+                showToast("Gagal memuat detail template: " + err.message);
             }
         }
 
@@ -1113,74 +1166,204 @@
         }
 
         function createNewTemplate() {
-            const name = prompt("Nama Template Baru:", "Bukti Layanan Baru");
-            if (!name || !name.trim()) return;
-            const id = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+            openNewTemplateModal();
+        }
 
-            currentTemplate = {
-                id: id,
-                name: name.trim(),
-                category: "struk",
-                description: "Template kustom " + name,
-                version: "1.0.0",
-                paper: {
-                    width_mm: 80,
-                    height_mm: 130,
-                    orientation: "portrait",
-                    margin_top: 2.0,
-                    margin_left: 4.0
-                },
-                elements: [
+        function openNewTemplateModal() {
+            document.getElementById('modalTmplName').value = '';
+            document.getElementById('modalTmplPreset').value = '80x130';
+            document.getElementById('modalTmplWidth').value = 80;
+            document.getElementById('modalTmplHeight').value = 130;
+            const modal = document.getElementById('newTemplateModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                const inp = document.getElementById('modalTmplName');
+                if (inp) inp.focus();
+            }, 100);
+        }
+
+        function closeNewTemplateModal() {
+            document.getElementById('newTemplateModal').style.display = 'none';
+        }
+
+        function onModalPresetChange(val) {
+            if (val === 'custom') return;
+            const [w, h] = val.split('x').map(Number);
+            document.getElementById('modalTmplWidth').value = w;
+            document.getElementById('modalTmplHeight').value = h;
+        }
+
+        async function submitNewTemplate() {
+            const rawName = document.getElementById('modalTmplName').value;
+            if (!rawName || !rawName.trim()) {
+                alert("Silahkan masukkan nama template terlebih dahulu!");
+                document.getElementById('modalTmplName').focus();
+                return;
+            }
+
+            const name = rawName.trim();
+            let id = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+            if (!id) id = 'template_' + Date.now();
+
+            const w = parseFloat(document.getElementById('modalTmplWidth').value) || 80;
+            const h = parseFloat(document.getElementById('modalTmplHeight').value) || 130;
+            const preset = document.getElementById('modalTmplPreset').value;
+
+            let cat = "struk";
+            if (preset === '50x30' || (w <= 60 && h <= 50)) {
+                cat = "label";
+            } else if (preset === '25x280' || (h >= 200 && w <= 35)) {
+                cat = "gelang";
+            }
+
+            const initialElements = [];
+            if (cat === "gelang") {
+                // Elemen khusus format gelang pasien
+                initialElements.push(
                     {
-                        id: "el_1",
+                        id: "el_nama",
                         type: "text",
-                        x_mm: 4.0,
-                        y_mm: 6.0,
-                        content: name.trim(),
+                        x_mm: 3.0,
+                        y_mm: 5.0,
+                        content: "{{.nama_pasien}}",
                         font_family: "Arial",
-                        font_size: 13.0,
+                        font_size: 11.0,
                         font_weight: "bold",
                         align: "left"
                     },
                     {
-                        id: "el_2",
+                        id: "el_rm_tgl",
+                        type: "text",
+                        x_mm: 3.0,
+                        y_mm: 11.0,
+                        content: "RM: {{.no_mr}} • Tgl: {{.tgl_lahir}}",
+                        font_family: "Arial",
+                        font_size: 9.0,
+                        font_weight: "normal",
+                        align: "left"
+                    },
+                    {
+                        id: "el_barcode",
+                        type: "barcode",
+                        x_mm: 3.0,
+                        y_mm: 17.0,
+                        width_mm: 20.0,
+                        height_mm: 8.0,
+                        content: "{{.no_mr}}"
+                    }
+                );
+            } else if (cat === "label") {
+                // Elemen label 50x30
+                initialElements.push(
+                    {
+                        id: "el_nama",
+                        type: "text",
+                        x_mm: 2.0,
+                        y_mm: 4.0,
+                        content: name,
+                        font_family: "Arial",
+                        font_size: 10.0,
+                        font_weight: "bold",
+                        align: "left"
+                    },
+                    {
+                        id: "el_line",
+                        type: "line",
+                        x_mm: 2.0,
+                        y_mm: 7.0,
+                        width_mm: Math.max(10, w - 4),
+                        thickness_mm: 0.35,
+                        style: "solid"
+                    },
+                    {
+                        id: "el_rm",
+                        type: "text",
+                        x_mm: 2.0,
+                        y_mm: 12.0,
+                        content: "No. RM: {{.no_mr}}",
+                        font_family: "Arial",
+                        font_size: 9.0,
+                        font_weight: "normal",
+                        align: "left"
+                    }
+                );
+            } else {
+                // Elemen struk thermal standar 80mm
+                initialElements.push(
+                    {
+                        id: "el_instansi",
+                        type: "text",
+                        x_mm: 4.0,
+                        y_mm: 6.0,
+                        content: name,
+                        font_family: "Arial",
+                        font_size: 12.5,
+                        font_weight: "bold",
+                        align: "left"
+                    },
+                    {
+                        id: "el_line",
                         type: "line",
                         x_mm: 4.0,
                         y_mm: 12.0,
-                        width_mm: 72.0,
+                        width_mm: Math.max(10, w - 8),
                         thickness_mm: 0.4,
                         style: "solid"
                     },
                     {
-                        id: "el_3",
+                        id: "el_info",
                         type: "text",
                         x_mm: 4.0,
                         y_mm: 18.0,
-                        content: "No. RM : {{.no_mr}}",
+                        content: "No. RM : {{.no_mr}}\nNama   : {{.nama_pasien}}",
                         font_family: "Arial",
                         font_size: 9.5,
                         font_weight: "normal",
                         align: "left"
                     }
-                ],
+                );
+            }
+
+            const newTmpl = {
+                id: id,
+                name: name,
+                category: cat,
+                description: "Template kustom " + name,
+                version: "1.0.0",
+                paper: {
+                    width_mm: w,
+                    height_mm: h,
+                    orientation: h > w ? "portrait" : "landscape",
+                    margin_top: 2.0,
+                    margin_left: 3.0
+                },
+                elements: initialElements,
                 sample_data: {
                     no_mr: "00150515",
-                    nama_pasien: "NANI"
+                    nama_pasien: "NANI",
+                    tgl_lahir: "29/01/1934"
                 }
             };
 
-            allTemplates.push(currentTemplate);
-            renderTemplateGallery(allTemplates);
-
-            const sel = document.getElementById('selTemplate');
-            const opt = document.createElement('option');
-            opt.value = currentTemplate.id;
-            opt.text = currentTemplate.name + " (" + currentTemplate.paper.width_mm + "x" + currentTemplate.paper.height_mm + "mm)";
-            opt.selected = true;
-            sel.appendChild(opt);
-
-            loadTemplateDetail(currentTemplate.id);
-            showToast("Template baru '" + name + "' berhasil dibuat! Sesuaikan kanvas lalu klik 'Simpan Perubahan Template'.");
+            showToast("Menyimpan template baru ke sistem...");
+            try {
+                const res = await fetch('/printgo/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTmpl)
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    closeNewTemplateModal();
+                    showToast("Template baru '" + name + "' berhasil dibuat!");
+                    await loadTemplatesList();
+                    await loadTemplateDetail(id);
+                } else {
+                    showToast("Gagal membuat template: " + (data.message || data.error));
+                }
+            } catch (err) {
+                showToast("Gagal menyimpan template baru: " + err.message);
+            }
         }
 
         async function saveCurrentTemplate() {

@@ -1,0 +1,114 @@
+{
+  "id": "gelang_pasien",
+  "name": "Gelang Pasien (280x25mm)",
+  "category": "gelang",
+  "description": "Gelang identitas pasien rawat inap / IGD thermal wristband",
+  "version": "1.0.0",
+  "updated_at": "2026-11-13T10:15:00Z",
+  "paper": {
+    "width_mm": 280,
+    "height_mm": 25,
+    "orientation": "landscape",
+    "margin_top": 1.5,
+    "margin_left": 3.0
+  },
+  "elements": [
+    {
+      "id": "el_instansi",
+      "type": "text",
+      "x_mm": 5.0,
+      "y_mm": 4.5,
+      "content": "RSU ASHAVIN",
+      "font_family": "Arial",
+      "font_size": 8.0,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_nama",
+      "type": "text",
+      "x_mm": 5.0,
+      "y_mm": 10.5,
+      "content": "{{.nama_pasien}}",
+      "font_family": "Arial",
+      "font_size": 12.0,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_rm_tgl",
+      "type": "text",
+      "x_mm": 5.0,
+      "y_mm": 16.5,
+      "content": "RM: {{.no_mr}}  •  Tgl Lahir: {{.tgl_lahir}} ({{.umur}} thn)",
+      "font_family": "Arial",
+      "font_size": 8.5,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_jk_ruang",
+      "type": "text",
+      "x_mm": 5.0,
+      "y_mm": 21.0,
+      "content": "JK: {{.jenis_kelamin}}  •  Ruang: {{.ruangan}}",
+      "font_family": "Arial",
+      "font_size": 8.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_barcode",
+      "type": "barcode",
+      "x_mm": 110.0,
+      "y_mm": 4.5,
+      "width_mm": 48.0,
+      "height_mm": 12.0,
+      "content": "{{.no_mr}}",
+      "format": "CODE128"
+    },
+    {
+      "id": "el_bc_text",
+      "type": "text",
+      "x_mm": 110.0,
+      "y_mm": 18.5,
+      "content": "*{{.no_mr}}*",
+      "font_family": "Courier",
+      "font_size": 8.5,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_sep",
+      "type": "text",
+      "x_mm": 170.0,
+      "y_mm": 8.0,
+      "content": "No. Registrasi : {{.no_registrasi}}",
+      "font_family": "Arial",
+      "font_size": 8.5,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_dokter",
+      "type": "text",
+      "x_mm": 170.0,
+      "y_mm": 14.0,
+      "content": "DPJP : {{.nama_dokter}}",
+      "font_family": "Arial",
+      "font_size": 8.5,
+      "font_weight": "normal",
+      "align": "left"
+    }
+  ],
+  "sample_data": {
+    "nama_pasien": "NANI",
+    "no_mr": "00150515",
+    "tgl_lahir": "29/01/1934",
+    "umur": "92",
+    "jenis_kelamin": "Perempuan",
+    "ruangan": "Penyakit Dalam",
+    "no_registrasi": "2611000008",
+    "nama_dokter": "dr. Ridha Wahyutomo, SpMK"
+  }
+}

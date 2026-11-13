@@ -74,4 +74,21 @@ func TestDynamicTemplateManager(t *testing.T) {
 		t.Fatalf("File PDF bukti_pendaftaran tidak valid: %v", err)
 	}
 	t.Logf("Berhasil render PDF bukti_pendaftaran: %s (%d bytes)", buktiPDF, fi3.Size())
+
+	// 4. Test Gelang Pasien 280x25mm
+	gelangTmpl, found := actualTM.GetTemplate("gelang_pasien")
+	if !found {
+		t.Fatalf("Template 'gelang_pasien' harusnya ditemukan di folder templates")
+	}
+
+	gelangPDF, err := actualTM.RenderToPDF(gelangTmpl, gelangTmpl.SampleData, saveDir, "TEST-GELANG")
+	if err != nil {
+		t.Fatalf("Gagal render gelang_pasien ke PDF: %v", err)
+	}
+
+	fi4, err := os.Stat(gelangPDF)
+	if err != nil || fi4.Size() == 0 {
+		t.Fatalf("File PDF gelang_pasien tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF gelang_pasien: %s (%d bytes)", gelangPDF, fi4.Size())
 }
