@@ -91,4 +91,38 @@ func TestDynamicTemplateManager(t *testing.T) {
 		t.Fatalf("File PDF gelang_pasien tidak valid: %v", err)
 	}
 	t.Logf("Berhasil render PDF gelang_pasien: %s (%d bytes)", gelangPDF, fi4.Size())
+
+	// 5. Test Tracer Masuk (80x100mm)
+	tracerTmpl, found := actualTM.GetTemplate("tracer")
+	if !found {
+		t.Fatalf("Template 'tracer' harusnya ditemukan di folder templates")
+	}
+
+	tracerPDF, err := actualTM.RenderToPDF(tracerTmpl, tracerTmpl.SampleData, saveDir, "TEST-TRACER")
+	if err != nil {
+		t.Fatalf("Gagal render tracer ke PDF: %v", err)
+	}
+
+	fi5, err := os.Stat(tracerPDF)
+	if err != nil || fi5.Size() == 0 {
+		t.Fatalf("File PDF tracer tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF tracer: %s (%d bytes)", tracerPDF, fi5.Size())
+
+	// 6. Test Gelang Pasien Laki Laki (100x28mm)
+	gelangLakiTmpl, found := actualTM.GetTemplate("gelang_pasien_laki")
+	if !found {
+		t.Fatalf("Template 'gelang_pasien_laki' harusnya ditemukan di folder templates")
+	}
+
+	gelangLakiPDF, err := actualTM.RenderToPDF(gelangLakiTmpl, gelangLakiTmpl.SampleData, saveDir, "TEST-GELANG-LAKI")
+	if err != nil {
+		t.Fatalf("Gagal render gelang_pasien_laki ke PDF: %v", err)
+	}
+
+	fi6, err := os.Stat(gelangLakiPDF)
+	if err != nil || fi6.Size() == 0 {
+		t.Fatalf("File PDF gelang_pasien_laki tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF gelang_pasien_laki: %s (%d bytes)", gelangLakiPDF, fi6.Size())
 }

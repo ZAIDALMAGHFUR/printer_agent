@@ -1,0 +1,114 @@
+{
+  "id": "gelang_pasien_laki",
+  "name": "Gelang Pasien Laki Laki (100x28mm)",
+  "category": "gelang",
+  "description": "Gelang identitas pasien rawat inap / IGD laki-laki thermal wristband",
+  "version": "1.0.0",
+  "updated_at": "2026-11-13T10:20:00Z",
+  "paper": {
+    "width_mm": 100,
+    "height_mm": 28,
+    "orientation": "landscape",
+    "margin_top": 2.0,
+    "margin_left": 3.0
+  },
+  "elements": [
+    {
+      "id": "el_nama",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 5.5,
+      "content": "{{.nama_pasien}}",
+      "font_family": "Arial",
+      "font_size": 13.0,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_rm_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 11.5,
+      "content": "No. RM:",
+      "font_family": "Arial",
+      "font_size": 10.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_rm_val",
+      "type": "text",
+      "x_mm": 18.0,
+      "y_mm": 11.5,
+      "content": "{{.no_mr}} - ",
+      "font_family": "Arial",
+      "font_size": 10.5,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_tgl_lahir",
+      "type": "text",
+      "x_mm": 37.0,
+      "y_mm": 11.5,
+      "content": "{{.tgl_lahir}}",
+      "font_family": "Arial",
+      "font_size": 10.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_umur",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 17.0,
+      "content": "Umur: {{.umur}} tahun",
+      "font_family": "Arial",
+      "font_size": 9.5,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_tgl_reg",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 22.5,
+      "content": "Tgl. Reg: {{.tgl_registrasi}}",
+      "font_family": "Arial",
+      "font_size": 8.5,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_barcode",
+      "type": "barcode",
+      "x_mm": 58.0,
+      "y_mm": 4.5,
+      "width_mm": 38.0,
+      "height_mm": 13.0,
+      "content": "{{.no_registrasi}}",
+      "format": "CODE128"
+    },
+    {
+      "id": "el_bc_text",
+      "type": "text",
+      "x_mm": 77.0,
+      "y_mm": 22.0,
+      "width_mm": 38.0,
+      "content": "{{.no_registrasi}}",
+      "font_family": "Arial",
+      "font_size": 8.5,
+      "font_weight": "normal",
+      "align": "center"
+    }
+  ],
+  "sample_data": {
+    "nama_pasien": "NANI",
+    "no_mr": "00150515",
+    "tgl_lahir": "29/01/1934",
+    "umur": "92",
+    "jenis_kelamin": "Laki-Laki",
+    "no_registrasi": "2611000008",
+    "tgl_registrasi": "2026-11-02 12:15:40"
+  }
+}
