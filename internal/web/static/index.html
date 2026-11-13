@@ -112,6 +112,256 @@
         .pill-error { background: #fee2e2; color: #b91c1c; }
 
         #toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; background: #1e293b; color: #fff; font-size: 14px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 999; }
+
+        /* ========================================================
+           Modern Select2 Component Styles (Sleek, Fast, Accessible)
+           ======================================================== */
+        .c-select-wrap {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            vertical-align: middle;
+            font-family: inherit;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        /* Hidden original native select */
+        .c-select-native-hidden {
+            position: absolute !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+        }
+
+        /* Trigger Box */
+        .c-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            min-height: 38px;
+            padding: 7px 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+            box-sizing: border-box;
+        }
+
+        .c-select-trigger:hover {
+            border-color: #94a3b8;
+            background-color: #f8fafc;
+        }
+
+        .c-select-wrap.open .c-select-trigger,
+        .c-select-trigger:focus-visible {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+        }
+
+        .c-select-trigger.disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+            border-color: #e2e8f0;
+        }
+
+        .c-select-label {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .c-select-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .c-select-wrap.open .c-select-arrow {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        /* Dropdown Menu Floating Panel */
+        .c-select-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            min-width: 100%;
+            width: max-content;
+            max-width: 440px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.18), 0 8px 12px -6px rgba(15, 23, 42, 0.08);
+            z-index: 99999;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+            box-sizing: border-box;
+        }
+
+        .c-select-dropdown.c-select-dropup {
+            top: auto;
+            bottom: calc(100% + 5px);
+            transform: translateY(6px);
+            box-shadow: 0 -12px 28px -4px rgba(15, 23, 42, 0.18), 0 -8px 12px -6px rgba(15, 23, 42, 0.08);
+        }
+
+        .c-select-wrap.open .c-select-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Search input inside dropdown */
+        .c-select-search {
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .c-select-search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .c-select-search-input {
+            width: 100%;
+            padding: 6px 10px 6px 28px;
+            font-size: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            box-sizing: border-box;
+        }
+
+        .c-select-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.18);
+        }
+
+        /* Options list container */
+        .c-select-options {
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 4px;
+            margin: 0;
+            list-style: none;
+            box-sizing: border-box;
+        }
+
+        .c-select-options::-webkit-scrollbar {
+            width: 5px;
+        }
+        .c-select-options::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .c-select-options::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .c-select-options::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Individual option items */
+        .c-select-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #334155;
+            cursor: pointer;
+            transition: background-color 0.12s ease, color 0.12s ease;
+            user-select: none;
+        }
+
+        .c-select-option:hover,
+        .c-select-option.highlighted {
+            background-color: #f0f9ff;
+            color: var(--primary);
+        }
+
+        .c-select-option.selected {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 600;
+        }
+
+        .c-select-option.disabled {
+            color: #94a3b8;
+            background-color: transparent !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .c-select-option-check {
+            display: none;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .c-select-option.selected .c-select-option-check {
+            display: inline-flex;
+        }
+
+        .c-select-empty {
+            padding: 12px 14px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Stacking context for table rows with open dropdowns */
+        tr.c-select-active-row {
+            position: relative;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
@@ -260,15 +510,15 @@
                     <div class="prop-group">
                         <label>Preset Cepat Ukuran:</label>
                         <select id="presetPaperSelect" onchange="applyPaperPreset(this.value)">
-                            <option value="custom">Kustom (Tarik Manual / Ketik)</option>
-                            <option value="86x54">Kartu Pasien (86 x 54 mm CR80)</option>
-                            <option value="50x30">Label Pasien (50 x 30 mm)</option>
-                            <option value="80x100">Tracer Masuk (80 x 100 mm)</option>
-                            <option value="80x115">Struk Antrian Kiosk (80 x 115 mm)</option>
-                            <option value="80x130">Bukti Pendaftaran / Tracer (80 x 130 mm)</option>
-                            <option value="100x28">Gelang Pasien (100 x 28 mm)</option>
-                            <option value="80x80">Struk Pendek (80 x 80 mm)</option>
-                            <option value="25x280">Gelang Pasien Strip (25 x 280 mm)</option>
+                            <option value="custom">✏️ Kustom (Tarik Manual / Ketik)</option>
+                            <option value="86x54">💳 Kartu Pasien (86 x 54 mm CR80)</option>
+                            <option value="50x30">🏷️ Label Pasien (50 x 30 mm)</option>
+                            <option value="80x100">📋 Tracer Masuk (80 x 100 mm)</option>
+                            <option value="80x115">🎫 Struk Antrian Kiosk (80 x 115 mm)</option>
+                            <option value="80x130">🧾 Bukti Pendaftaran / Tracer (80 x 130 mm)</option>
+                            <option value="100x28">🎗️ Gelang Pasien (100 x 28 mm)</option>
+                            <option value="80x80">🧾 Struk Pendek (80 x 80 mm)</option>
+                            <option value="25x280">🎗️ Gelang Pasien Strip (25 x 280 mm)</option>
                         </select>
                     </div>
                     <div class="grid-2">
@@ -380,15 +630,15 @@
                 <div class="prop-group">
                     <label>Preset Format Kertas:</label>
                     <select id="modalTmplPreset" onchange="onModalPresetChange(this.value)">
-                        <option value="86x54">Kartu Pasien ID Card (86 × 54 mm CR80)</option>
-                        <option value="80x100">Tracer Masuk (80 × 100 mm)</option>
-                        <option value="80x130">Struk Bukti Pendaftaran (80 × 130 mm)</option>
-                        <option value="80x115">Struk Antrian Kiosk (80 × 115 mm)</option>
-                        <option value="50x30">Label Pasien / Farmasi (50 × 30 mm)</option>
-                        <option value="100x28">Gelang Pasien Thermal (100 × 28 mm)</option>
-                        <option value="80x80">Struk Kasir Standar (80 × 80 mm)</option>
-                        <option value="25x280">Gelang Pasien Panjang (25 × 280 mm)</option>
-                        <option value="custom">Kustom (Tentukan Sendiri)</option>
+                        <option value="86x54">💳 Kartu Pasien ID Card (86 × 54 mm CR80)</option>
+                        <option value="80x100">📋 Tracer Masuk (80 × 100 mm)</option>
+                        <option value="80x130">🧾 Struk Bukti Pendaftaran (80 × 130 mm)</option>
+                        <option value="80x115">🎫 Struk Antrian Kiosk (80 × 115 mm)</option>
+                        <option value="50x30">🏷️ Label Pasien / Farmasi (50 × 30 mm)</option>
+                        <option value="100x28">🎗️ Gelang Pasien Thermal (100 × 28 mm)</option>
+                        <option value="80x80">🧾 Struk Kasir Standar (80 × 80 mm)</option>
+                        <option value="25x280">🎗️ Gelang Pasien Panjang (25 × 280 mm)</option>
+                        <option value="custom">✏️ Kustom (Tentukan Sendiri)</option>
                     </select>
                 </div>
 
@@ -432,6 +682,374 @@
     </div>
 
     <script>
+        /* ========================================================
+           ModernSelect Component (Select2 Alternative - Zero Deps)
+           ======================================================== */
+        class ModernSelect {
+            constructor(selectEl) {
+                if (!selectEl || selectEl._modernSelect || selectEl.classList.contains('no-modern-select')) return;
+                this.select = selectEl;
+                this.select._modernSelect = this;
+                this.isOpen = false;
+                this.highlightIndex = -1;
+                this.initDOM();
+                this.initEvents();
+                this.syncValue();
+            }
+
+            initDOM() {
+                if (!this.select.parentNode) return;
+
+                // Create wrapper
+                this.wrap = document.createElement('div');
+                this.wrap.className = 'c-select-wrap';
+                if (this.select.id) this.wrap.setAttribute('data-target-id', this.select.id);
+
+                // Copy width from select element if present
+                const inlineWidth = this.select.style.width || this.select.getAttribute('width');
+                if (inlineWidth) {
+                    this.wrap.style.width = inlineWidth;
+                }
+
+                // Hide native select visually while keeping it in the exact DOM tree
+                this.select.classList.add('c-select-native-hidden');
+
+                // Insert wrapper
+                this.select.parentNode.insertBefore(this.wrap, this.select);
+                this.wrap.appendChild(this.select);
+
+                // Trigger box
+                this.trigger = document.createElement('div');
+                this.trigger.className = 'c-select-trigger';
+                this.trigger.tabIndex = 0;
+                this.trigger.innerHTML = `
+                    <span class="c-select-label">Pilih...</span>
+                    <span class="c-select-arrow">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </span>
+                `;
+                this.wrap.appendChild(this.trigger);
+
+                // Dropdown menu
+                this.dropdown = document.createElement('div');
+                this.dropdown.className = 'c-select-dropdown';
+                this.dropdown.innerHTML = `
+                    <div class="c-select-search" style="display: none;">
+                        <span class="c-select-search-icon">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
+                        <input type="text" class="c-select-search-input" placeholder="Cari pilihan..." autocomplete="off">
+                    </div>
+                    <div class="c-select-options"></div>
+                    <div class="c-select-empty" style="display: none;">Tidak ada pilihan yang cocok</div>
+                `;
+                this.wrap.appendChild(this.dropdown);
+
+                this.labelEl = this.trigger.querySelector('.c-select-label');
+                this.searchBox = this.dropdown.querySelector('.c-select-search');
+                this.searchInput = this.dropdown.querySelector('.c-select-search-input');
+                this.optionsList = this.dropdown.querySelector('.c-select-options');
+                this.emptyEl = this.dropdown.querySelector('.c-select-empty');
+
+                this.buildOptions();
+            }
+
+            buildOptions() {
+                this.optionsList.innerHTML = '';
+                const options = Array.from(this.select.options);
+
+                // Show search box if 4 or more options
+                if (options.length >= 4) {
+                    this.searchBox.style.display = 'flex';
+                } else {
+                    this.searchBox.style.display = 'none';
+                }
+
+                options.forEach((opt, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'c-select-option' + (opt.selected ? ' selected' : '') + (opt.disabled ? ' disabled' : '');
+                    item.setAttribute('data-value', opt.value);
+                    item.setAttribute('data-index', idx);
+                    item.innerHTML = `
+                        <span>${opt.text || opt.label}</span>
+                        <span class="c-select-option-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                    `;
+
+                    if (!opt.disabled) {
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.selectOption(opt.value);
+                            this.close();
+                            this.trigger.focus();
+                        });
+                    }
+                    this.optionsList.appendChild(item);
+                });
+
+                this.syncValue();
+            }
+
+            selectOption(value) {
+                this.select.value = value;
+                this.syncValue();
+
+                // Dispatch native change event so all handlers trigger seamlessly
+                this.select.dispatchEvent(new Event('change', { bubbles: true }));
+                if (typeof this.select.onchange === 'function') {
+                    this.select.onchange.call(this.select, { target: this.select });
+                }
+            }
+
+            syncValue() {
+                const selectedOpt = this.select.options[this.select.selectedIndex];
+                if (selectedOpt) {
+                    this.labelEl.innerText = selectedOpt.text;
+                } else {
+                    this.labelEl.innerText = 'Pilih...';
+                }
+
+                const currentVal = this.select.value;
+                const items = this.optionsList.querySelectorAll('.c-select-option');
+                items.forEach(it => {
+                    if (it.getAttribute('data-value') === currentVal) {
+                        it.classList.add('selected');
+                    } else {
+                        it.classList.remove('selected');
+                    }
+                });
+
+                if (this.select.disabled) {
+                    this.trigger.classList.add('disabled');
+                } else {
+                    this.trigger.classList.remove('disabled');
+                }
+            }
+
+            open() {
+                if (this.isOpen || this.select.disabled) return;
+                ModernSelect.closeAll();
+
+                this.isOpen = true;
+                this.wrap.classList.add('open');
+
+                const tr = this.wrap.closest('tr');
+                if (tr) tr.classList.add('c-select-active-row');
+
+                // Check vertical room
+                const rect = this.trigger.getBoundingClientRect();
+                const spaceBelow = window.innerHeight - rect.bottom;
+                if (spaceBelow < 250 && rect.top > 250) {
+                    this.dropdown.classList.add('c-select-dropup');
+                } else {
+                    this.dropdown.classList.remove('c-select-dropup');
+                }
+
+                // Check horizontal room
+                const dropWidth = 320;
+                if (rect.left + dropWidth > window.innerWidth - 12) {
+                    this.dropdown.style.left = 'auto';
+                    this.dropdown.style.right = '0';
+                } else {
+                    this.dropdown.style.left = '0';
+                    this.dropdown.style.right = 'auto';
+                }
+
+                if (this.searchBox.style.display !== 'none') {
+                    this.searchInput.value = '';
+                    this.filterOptions('');
+                    setTimeout(() => this.searchInput.focus(), 60);
+                }
+
+                const selected = this.optionsList.querySelector('.c-select-option.selected');
+                if (selected) {
+                    selected.scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            close() {
+                if (!this.isOpen) return;
+                this.isOpen = false;
+                this.wrap.classList.remove('open');
+                this.dropdown.classList.remove('c-select-dropup');
+
+                const tr = this.wrap.closest('tr');
+                if (tr) tr.classList.remove('c-select-active-row');
+
+                this.highlightIndex = -1;
+            }
+
+            toggle() {
+                if (this.isOpen) this.close();
+                else this.open();
+            }
+
+            filterOptions(q) {
+                const query = (q || '').toLowerCase().trim();
+                const items = this.optionsList.querySelectorAll('.c-select-option');
+                let matchCount = 0;
+                items.forEach(it => {
+                    const text = it.textContent.toLowerCase();
+                    if (!query || text.includes(query)) {
+                        it.style.display = 'flex';
+                        matchCount++;
+                    } else {
+                        it.style.display = 'none';
+                    }
+                });
+                this.emptyEl.style.display = matchCount === 0 ? 'block' : 'none';
+                this.highlightIndex = -1;
+            }
+
+            initEvents() {
+                this.trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggle();
+                });
+
+                this.trigger.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.open();
+                    } else if (e.key === 'Escape') {
+                        this.close();
+                    }
+                });
+
+                this.searchInput.addEventListener('input', (e) => {
+                    this.filterOptions(e.target.value);
+                });
+
+                this.searchInput.addEventListener('keydown', (e) => {
+                    const visibleItems = Array.from(this.optionsList.querySelectorAll('.c-select-option:not(.disabled)'))
+                        .filter(el => el.style.display !== 'none');
+
+                    if (e.key === 'Escape') {
+                        this.close();
+                        this.trigger.focus();
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (visibleItems.length === 0) return;
+                        this.highlightIndex = (this.highlightIndex + 1) % visibleItems.length;
+                        this.updateHighlight(visibleItems);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (visibleItems.length === 0) return;
+                        this.highlightIndex = (this.highlightIndex - 1 + visibleItems.length) % visibleItems.length;
+                        this.updateHighlight(visibleItems);
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (this.highlightIndex >= 0 && this.highlightIndex < visibleItems.length) {
+                            this.selectOption(visibleItems[this.highlightIndex].getAttribute('data-value'));
+                            this.close();
+                            this.trigger.focus();
+                        } else if (visibleItems.length > 0) {
+                            this.selectOption(visibleItems[0].getAttribute('data-value'));
+                            this.close();
+                            this.trigger.focus();
+                        }
+                    }
+                });
+
+                // Intercept programmatic .value assignments so label updates automatically
+                const origDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+                Object.defineProperty(this.select, 'value', {
+                    get: () => origDesc.get.call(this.select),
+                    set: (val) => {
+                        origDesc.set.call(this.select, val);
+                        this.syncValue();
+                    },
+                    configurable: true
+                });
+
+                this.select.addEventListener('change', () => {
+                    this.syncValue();
+                });
+
+                // Re-sync options when native <option> tags change
+                this.mutationObserver = new MutationObserver(() => {
+                    this.buildOptions();
+                });
+                this.mutationObserver.observe(this.select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+            }
+
+            updateHighlight(visibleItems) {
+                visibleItems.forEach((el, idx) => {
+                    if (idx === this.highlightIndex) {
+                        el.classList.add('highlighted');
+                        el.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        el.classList.remove('highlighted');
+                    }
+                });
+            }
+
+            static closeAll() {
+                document.querySelectorAll('.c-select-wrap.open').forEach(el => {
+                    const sel = el.querySelector('select');
+                    if (sel && sel._modernSelect) {
+                        sel._modernSelect.close();
+                    }
+                });
+            }
+
+            static init(selectEl) {
+                if (!selectEl || selectEl._modernSelect || selectEl.classList.contains('no-modern-select')) return selectEl ? selectEl._modernSelect : null;
+                return new ModernSelect(selectEl);
+            }
+
+            static enhanceAll(root = document) {
+                if (!root) return;
+                const selects = root.querySelectorAll ? root.querySelectorAll('select:not(.c-select-native-hidden):not(.no-modern-select)') : [];
+                selects.forEach(sel => {
+                    ModernSelect.init(sel);
+                });
+            }
+        }
+
+        // Global click listener to close dropdowns
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.c-select-wrap')) {
+                ModernSelect.closeAll();
+            }
+        });
+
+        // Global mutation observer for auto-enhancing dynamically injected selects
+        const globalSelectObserver = new MutationObserver(mutations => {
+            let hasNewSelect = false;
+            for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                    if (node.nodeType === 1) {
+                        if (node.tagName === 'SELECT' && !node.classList.contains('c-select-native-hidden')) {
+                            hasNewSelect = true;
+                            break;
+                        } else if (node.querySelector && node.querySelector('select:not(.c-select-native-hidden)')) {
+                            hasNewSelect = true;
+                            break;
+                        }
+                    }
+                }
+                if (hasNewSelect) break;
+            }
+            if (hasNewSelect) {
+                ModernSelect.enhanceAll(document);
+            }
+        });
+        if (document.body) {
+            globalSelectObserver.observe(document.body, { childList: true, subtree: true });
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                globalSelectObserver.observe(document.body, { childList: true, subtree: true });
+            });
+        }
         let currentConfig = {};
         let installedPrinters = [];
         let allTemplates = [];
@@ -466,6 +1084,7 @@
                 loadHistory();
                 await loadTemplatesList();
                 initPaperResizeHandles();
+                ModernSelect.enhanceAll(document);
             } catch (err) {
                 showToast("Gagal memuat data: " + err);
             }
@@ -487,10 +1106,10 @@
                     <td><input type="text" class="row-name" value="${p.name}"></td>
                     <td>
                         <select class="row-type" onchange="onTypeChange(this)">
-                            <option value="usb" ${p.type === 'usb' ? 'selected' : ''}>Local USB</option>
-                            <option value="socket" ${p.type === 'socket' ? 'selected' : ''}>Network Socket (IP:9100)</option>
-                            <option value="relay" ${p.type === 'relay' ? 'selected' : ''}>Relay PC Sebelah</option>
-                            <option value="pdf" ${p.type === 'pdf' ? 'selected' : ''}>Virtual PDF</option>
+                            <option value="usb" ${p.type === 'usb' ? 'selected' : ''}>🔌 Local USB</option>
+                            <option value="socket" ${p.type === 'socket' ? 'selected' : ''}>🌐 Network Socket (IP:9100)</option>
+                            <option value="relay" ${p.type === 'relay' ? 'selected' : ''}>🔄 Relay PC Sebelah</option>
+                            <option value="pdf" ${p.type === 'pdf' ? 'selected' : ''}>📄 Virtual PDF</option>
                         </select>
                     </td>
                     <td>${renderTargetInput(p)}</td>
@@ -509,6 +1128,7 @@
                 `;
                 tbody.appendChild(tr);
             });
+            ModernSelect.enhanceAll(tbody);
         }
 
         function renderTargetInput(p) {
@@ -517,7 +1137,7 @@
             if (p.type === 'pdf') return `<input type="text" class="row-target" value="AutoSavePDF" disabled style="background:#f1f5f9;">`;
             
             let options = installedPrinters.map(pr => `
-                <option value="${pr.name}" ${pr.name === p.target ? 'selected' : ''}>${pr.name} ${pr.is_default ? '(Default)' : ''}</option>
+                <option value="${pr.name}" ${pr.name === p.target ? 'selected' : ''}>🖨️ ${pr.name} ${pr.is_default ? '(Default)' : ''}</option>
             `).join('');
             if (!options) options = `<option value="">(Tidak ada printer terdeteksi)</option>`;
             return `<select class="row-target">${options}</select>`;
@@ -526,6 +1146,7 @@
         function onTypeChange(sel) {
             const tr = sel.closest('tr');
             tr.cells[2].innerHTML = renderTargetInput({ type: sel.value, target: '' });
+            ModernSelect.enhanceAll(tr.cells[2]);
         }
 
         function addNewRow() {
@@ -535,10 +1156,10 @@
                 <td><input type="text" class="row-name" placeholder="TargetBaru"></td>
                 <td>
                     <select class="row-type" onchange="onTypeChange(this)">
-                        <option value="usb">Local USB</option>
-                        <option value="socket">Network Socket (IP:9100)</option>
-                        <option value="relay">Relay PC Sebelah</option>
-                        <option value="pdf">Virtual PDF</option>
+                        <option value="usb">🔌 Local USB</option>
+                        <option value="socket">🌐 Network Socket (IP:9100)</option>
+                        <option value="relay">🔄 Relay PC Sebelah</option>
+                        <option value="pdf">📄 Virtual PDF</option>
                     </select>
                 </td>
                 <td>${renderTargetInput({ type: 'usb', target: '' })}</td>
@@ -554,6 +1175,7 @@
                 </td>
             `;
             tbody.appendChild(tr);
+            ModernSelect.enhanceAll(tr);
         }
 
         function removeRow(btn) { btn.closest('tr').remove(); }
@@ -636,7 +1258,12 @@
                 renderTemplateGallery(allTemplates);
 
                 const sel = document.getElementById('selTemplate');
-                sel.innerHTML = allTemplates.map(t => `<option value="${t.id}">${t.name} (${t.paper.width_mm}x${t.paper.height_mm}mm)</option>`).join('');
+                sel.innerHTML = allTemplates.map(t => {
+                    const isStruk = (t.paper && t.paper.width_mm >= 70);
+                    const icon = isStruk ? '🧾' : '🏷️';
+                    return `<option value="${t.id}">${icon} ${t.name} (${t.paper.width_mm}x${t.paper.height_mm}mm)</option>`;
+                }).join('');
+                ModernSelect.enhanceAll(sel.parentNode || document);
 
                 if (allTemplates.length > 0) {
                     if (!currentTemplate || !allTemplates.some(t => t.id === currentTemplate.id)) {
@@ -775,6 +1402,16 @@
                 
                 const activeBadge = document.getElementById('activeTemplateBadge');
                 if (activeBadge) activeBadge.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm`;
+
+                const sel = document.getElementById('selTemplate');
+                if (sel && sel.value !== id) sel.value = id;
+
+                const presetSel = document.getElementById('presetPaperSelect');
+                if (presetSel) {
+                    const key = `${currentTemplate.paper.width_mm}x${currentTemplate.paper.height_mm}`;
+                    const hasOpt = Array.from(presetSel.options).some(o => o.value === key);
+                    presetSel.value = hasOpt ? key : 'custom';
+                }
 
                 highlightActiveCard(id);
                 updateCanvasSize();
@@ -1253,6 +1890,7 @@
                     <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 4px;" onclick="centerElementOnPaper()">↔ Pusatkan Barcode ke Tengah Kertas</button>
                 ` : ''}
             `;
+            ModernSelect.enhanceAll(container);
         }
 
         function updateProp(key, val) {
