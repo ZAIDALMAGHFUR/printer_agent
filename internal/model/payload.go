@@ -49,6 +49,7 @@ type PrintRequest struct {
 	Konten        []PrintLine            `json:"konten,omitempty"`         // Daftar baris (generic layout)
 	RawData       string                 `json:"raw_data,omitempty"`       // Raw ESC/POS atau TSPL string/base64
 	HTML          string                 `json:"html,omitempty"`           // Konten HTML untuk dokumen A4
+	PDFURL        string                 `json:"pdf_url,omitempty"`        // URL PDF dari server backend untuk diunduh & dicetak
 	Data          map[string]interface{} `json:"data,omitempty"`           // Key-value data mentah jika pakai template
 	Options       PrintOptions           `json:"options,omitempty"`        // Opsi cetak tambahan
 }

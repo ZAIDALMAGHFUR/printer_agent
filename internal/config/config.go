@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
 
 	"smart-print-agent/internal/model"
@@ -66,6 +68,14 @@ func (cm *ConfigManager) loadOrInit() {
 		if data, err := os.ReadFile(p); err == nil {
 			var cfg AppConfig
 			if err := json.Unmarshal(data, &cfg); err == nil {
+				if runtime.GOOS != "windows" && (strings.HasPrefix(cfg.PDFSaveDir, "C:\\") || strings.HasPrefix(cfg.PDFSaveDir, "c:\\")) {
+					home, _ := os.UserHomeDir()
+					if home != "" {
+						cfg.PDFSaveDir = filepath.Join(home, "SIMRS_PDF")
+					} else {
+						cfg.PDFSaveDir = "/tmp/SIMRS_PDF"
+					}
+				}
 				cm.cfg = &cfg
 				cm.filePath = p
 				return

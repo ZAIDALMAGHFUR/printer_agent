@@ -2,7 +2,11 @@ package printer
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -36,6 +40,20 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 			}
 		} else if len(req.Konten) == 0 {
 			req.Konten = ApplyTemplate(req.Template, req.Data)
+		}
+	}
+
+	// 0b. Jika ada PDFURL dan belum ada generatedPDFPath, unduh PDF dari URL backend!
+	if req.PDFURL != "" && generatedPDFPath == "" {
+		docName := req.DocumentType
+		if docName == "" {
+			docName = req.PrinterTarget
+		}
+		downloadedPath, err := m.downloadPDF(req.PDFURL, cfg.PDFSaveDir, req.RequestID, docName)
+		if err == nil {
+			generatedPDFPath = downloadedPath
+		} else {
+			log.Printf("[DOWNLOAD-PDF] Gagal mengunduh PDF dari %s: %v", req.PDFURL, err)
 		}
 	}
 
@@ -294,4 +312,49 @@ func DetectDriver(targetName string, printerName string, configured string) stri
 
 	return "escpos"
 }
+
+// downloadPDF mengunduh file PDF dari remote URL (cth: endpoint backend SIMRS) dan menyimpannya ke folder lokal
+func (m *Manager) downloadPDF(pdfURL, saveDir, reqID, docName string) (string, error) {
+	if docName == "" {
+		docName = "Struk"
+	}
+	if reqID == "" {
+		reqID = fmt.Sprintf("REQ-%d", time.Now().UnixNano()%1000000)
+	}
+
+	now := time.Now()
+	targetDir := filepath.Join(saveDir, now.Format("2006-01-02"))
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		return "", fmt.Errorf("gagal membuat direktori PDF: %w", err)
+	}
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Get(pdfURL)
+	if err != nil {
+		return "", fmt.Errorf("gagal mengambil file PDF dari %s: %w", pdfURL, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("server mengembalikan status HTTP %d saat mengunduh PDF", resp.StatusCode)
+	}
+
+	fileName := fmt.Sprintf("%s_%s_%s.pdf", docName, reqID, now.Format("150405"))
+	fullPath := filepath.Join(targetDir, fileName)
+
+	out, err := os.Create(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("gagal membuat file PDF tujuan: %w", err)
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("gagal menyimpan data PDF: %w", err)
+	}
+
+	log.Printf("[DOWNLOAD-PDF] Sukses mengunduh dan menyimpan PDF ke: %s", fullPath)
+	return fullPath, nil
+}
+
 
