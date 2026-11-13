@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="data:image/png;base64,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\");'>
+    <title>Smart Print Agent - Dashboard & Desainer</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .title h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
+        .title p { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+        .badge { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; background: #dcfce7; color: #166534; }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); margin-right: 6px; }
+
+        /* Nav Tabs */
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 2px; }
+        .tab-btn { padding: 10px 18px; border: none; background: transparent; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 6px 6px 0 0; transition: all 0.2s; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #f0f9ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .card-title { font-size: 16px; font-weight: 600; }
+
+        /* Tables & Inputs */
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th { background: #f1f5f9; color: var(--text-muted); font-weight: 600; }
+        
+        select, input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+        select:focus, input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+        /* Designer Specific */
+        .designer-layout { display: grid; grid-template-columns: 280px 1fr 300px; gap: 16px; }
+        .canvas-container { background: #cbd5e1; border-radius: 8px; padding: 24px; display: flex; justify-content: center; align-items: center; min-height: 480px; overflow: auto; }
+        .canvas-paper { background: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); position: relative; border: 1px solid #94a3b8; }
+        .canvas-el { position: absolute; border: 1px dashed transparent; cursor: pointer; user-select: none; }
+        .canvas-el:hover { border-color: var(--primary); background: rgba(2, 132, 199, 0.05); }
+        .canvas-el.selected { border-color: #0284c7 !important; border-style: solid; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2); }
+
+        .prop-group { margin-bottom: 12px; }
+        .prop-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+
+        /* Status Pills */
+        .pill { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .pill-success { background: #dcfce7; color: #15803d; }
+        .pill-pdf { background: #e0f2fe; color: #0369a1; }
+        .pill-error { background: #fee2e2; color: #b91c1c; }
+
+        #toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; background: #1e293b; color: #fff; font-size: 14px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 999; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title" style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #0284c7, #06b6d4); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;">🖨️</div>
+                <div>
+                    <h1 id="hospitalTitle">Smart Print Agent</h1>
+                    <p>Universal Printing • Visual Designer • GitHub Auto-Sync (v1.2.0)</p>
+                </div>
+            </div>
+            <div>
+                <span class="badge">
+                    <span class="badge-dot"></span>
+                    <span id="agentStatus">ONLINE - Port 1237</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tabPrinters')">🖨️ Pemetaan Printer</button>
+            <button class="tab-btn" onclick="switchTab('tabDesigner')">🎨 Desainer Template Visual</button>
+            <button class="tab-btn" onclick="switchTab('tabSync')">🔄 Auto-Update & GitHub</button>
+        </div>
+
+        <!-- TAB 1: PEMETAAN PRINTER -->
+        <div id="tabPrinters" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Pemetaan Printer Ruangan (Printer Routing)</div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                            Pilih printer target untuk setiap jenis cetakan. Mendukung Universal Spooler (Zebra, TSC, Epson, HP, Canon).
+                        </p>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="addNewRow()">+ Tambah Pemetaan</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 22%;">Target SIMRS</th>
+                            <th style="width: 20%;">Tipe Koneksi</th>
+                            <th style="width: 28%;">Printer Fisik / Alamat</th>
+                            <th style="width: 18%;">Metode Cetak</th>
+                            <th style="width: 12%; text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printerTableBody">
+                        <tr><td colspan="5" style="text-align: center;">Memuat konfigurasi...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Konfigurasi Global -->
+            <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">Pengaturan Global Agen</div>
+                <div class="grid-2">
+                    <div class="prop-group">
+                        <label>Nama Instansi / Rumah Sakit:</label>
+                        <input type="text" id="cfgHospital" placeholder="RSU ASHAVIN">
+                    </div>
+                    <div class="prop-group">
+                        <label>Folder Penyimpanan PDF (Fallback):</label>
+                        <input type="text" id="cfgPdfDir" placeholder="C:\SIMRS_PDF">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                        <input type="checkbox" id="cfgAutoPdf">
+                        <span>Otomatis simpan sebagai PDF jika printer fisik mati / tidak terhubung</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="saveConfiguration()">💾 Simpan Konfigurasi</button>
+                </div>
+            </div>
+
+            <!-- Riwayat Cetak -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Riwayat Cetak Terakhir</div>
+                    <button class="btn btn-outline btn-sm" onclick="loadHistory()">Segarkan</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Job ID</th>
+                            <th>Target</th>
+                            <th>Status</th>
+                            <th>Keterangan</th>
+                            <th>Durasi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Belum ada riwayat cetak.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: VISUAL TEMPLATE DESIGNER -->
+        <div id="tabDesigner" class="tab-content">
+            <div class="card" style="padding: 14px 20px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: 600; font-size: 13px;">Pilih Template:</label>
+                        <select id="selTemplate" style="width: 220px;" onchange="loadTemplateDetail(this.value)">
+                            <option value="">Memuat template...</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" onclick="createNewTemplate()">+ Baru</button>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" onclick="testPrintCurrentTemplate(true)">👁️ Preview PDF</button>
+                        <button class="btn btn-outline btn-sm" onclick="testPrintCurrentTemplate(false)">🖨️ Test Cetak Langsung</button>
+                        <button class="btn btn-primary btn-sm" onclick="saveCurrentTemplate()">💾 Simpan Template</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="designer-layout">
+                <!-- Sidebar Kiri: Ukuran Kertas & Toolbox -->
+                <div class="card" style="padding: 16px;">
+                    <div class="card-title" style="margin-bottom: 12px; font-size: 14px;">📐 Ukuran Kertas</div>
+                    <div class="prop-group">
+                        <label>Preset Cepat:</label>
+                        <select onchange="applyPaperPreset(this.value)">
+                            <option value="50x30">Label Pasien (50 x 30 mm)</option>
+                            <option value="70x40">Etiket Obat (70 x 40 mm)</option>
+                            <option value="80x110">Struk Antrian (80 x 110 mm)</option>
+                            <option value="25x280">Gelang Pasien (25 x 280 mm)</option>
+                        </select>
+                    </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Lebar (mm):</label>
+                            <input type="number" id="paperWidth" value="50" onchange="updateCanvasSize()">
+                        </div>
+                        <div class="prop-group">
+                            <label>Tinggi (mm):</label>
+                            <input type="number" id="paperHeight" value="30" onchange="updateCanvasSize()">
+                        </div>
+                    </div>
+
+                    <div class="card-title" style="margin: 16px 0 10px 0; font-size: 14px;">🛠️ Tambah Komponen</div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('text')">➕ Teks / Variabel</button>
+                        <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('barcode')">➕ Barcode Code 128</button>
+                        <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('line')">➕ Garis Divider</button>
+                    </div>
+
+                    <div class="card-title" style="margin: 18px 0 10px 0; font-size: 14px;">📋 Daftar Elemen</div>
+                    <div id="elementList" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+                    </div>
+                </div>
+
+                <!-- Tengah: Canvas Area -->
+                <div class="canvas-container">
+                    <div id="canvasPaper" class="canvas-paper" style="width: 350px; height: 210px;">
+                        <!-- Render elemen interaktif di sini -->
+                    </div>
+                </div>
+
+                <!-- Sidebar Kanan: Properti Elemen Terpilih -->
+                <div class="card" style="padding: 16px;">
+                    <div class="card-title" style="margin-bottom: 12px; font-size: 14px;">⚙️ Properti Elemen</div>
+                    <div id="propEditor">
+                        <p style="font-size: 13px; color: var(--text-muted);">Pilih elemen pada kanvas atau daftar untuk mengubah propertinya.</p>
+                    </div>
+
+                    <div class="card-title" style="margin: 20px 0 8px 0; font-size: 14px;">🧪 Sample Data (JSON)</div>
+                    <textarea id="sampleDataJson" rows="6" style="font-family: monospace; font-size: 11px;" placeholder='{"nama": "NANI"}' onchange="renderCanvasElements()"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: GITHUB SYNC & UPDATE -->
+        <div id="tabSync" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Sinkronisasi Template & Pembaruan Otomatis</div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                            Menghubungkan agen ke repository pusat GitHub agar seluruh PC kasir/loket otomatis mendapatkan update desain template.
+                        </p>
+                    </div>
+                    <button class="btn btn-primary" onclick="syncTemplatesNow()">🔄 Sinkronkan Sekarang</button>
+                </div>
+
+                <div class="grid-2" style="margin-bottom: 16px;">
+                    <div class="prop-group">
+                        <label>Repository GitHub Pusat:</label>
+                        <input type="text" id="cfgGitRepo" value="https://github.com/ZAIDALMAGHFUR/printer_agent">
+                    </div>
+                    <div class="prop-group">
+                        <label>Interval Auto-Check (Menit):</label>
+                        <input type="number" id="cfgGitInterval" value="60">
+                    </div>
+                </div>
+
+                <div style="background: #f1f5f9; border-radius: 8px; padding: 16px; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 14px;">Status Sinkronisasi:</span>
+                        <span id="syncBadge" class="pill pill-success">SIAP</span>
+                    </div>
+                    <p id="syncMsg" style="font-size: 13px; color: var(--text-muted);">Menghubungkan ke https://github.com/ZAIDALMAGHFUR/printer_agent...</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Pemeriksaan terakhir: <span id="syncLastTime">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast">Notifikasi</div>
+    </div>
+
+    <script>
+        let currentConfig = {};
+        let installedPrinters = [];
+        let currentTemplate = null;
+        let selectedElIndex = -1;
+        const MM_TO_PX = 7.0; // Faktor skala kanvas (1 mm = 7 px)
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'tabDesigner') loadTemplatesList();
+            if (tabId === 'tabSync') loadSyncStatus();
+        }
+
+        async function loadAll() {
+            try {
+                const resPrinters = await fetch('/api/printers');
+                installedPrinters = await resPrinters.json();
+
+                const resCfg = await fetch('/api/config');
+                currentConfig = await resCfg.json();
+                document.getElementById('cfgHospital').value = currentConfig.hospital_name || '';
+                document.getElementById('cfgPdfDir').value = currentConfig.pdf_save_dir || '';
+                document.getElementById('cfgAutoPdf').checked = currentConfig.auto_save_pdf;
+                if (currentConfig.github_repo) document.getElementById('cfgGitRepo').value = currentConfig.github_repo;
+                if (currentConfig.auto_sync_interval_min) document.getElementById('cfgGitInterval').value = currentConfig.auto_sync_interval_min;
+
+                renderPrinterTable(currentConfig.printers);
+                loadHistory();
+            } catch (err) {
+                showToast("Gagal memuat data: " + err);
+            }
+        }
+
+        function renderPrinterTable(printers) {
+            const tbody = document.getElementById('printerTableBody');
+            tbody.innerHTML = '';
+            const keys = Object.keys(printers || {});
+            if (keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada pemetaan printer.</td></tr>';
+                return;
+            }
+
+            keys.forEach(key => {
+                const p = printers[key];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="row-name" value="${p.name}"></td>
+                    <td>
+                        <select class="row-type" onchange="onTypeChange(this)">
+                            <option value="usb" ${p.type === 'usb' ? 'selected' : ''}>Local USB</option>
+                            <option value="socket" ${p.type === 'socket' ? 'selected' : ''}>Network Socket (IP:9100)</option>
+                            <option value="relay" ${p.type === 'relay' ? 'selected' : ''}>Relay PC Sebelah</option>
+                            <option value="pdf" ${p.type === 'pdf' ? 'selected' : ''}>Virtual PDF</option>
+                        </select>
+                    </td>
+                    <td>${renderTargetInput(p)}</td>
+                    <td>
+                        <select class="row-driver">
+                            <option value="auto" ${(!p.driver_type || p.driver_type === 'auto') ? 'selected' : ''}>✨ Universal (Driver Windows)</option>
+                            <option value="escpos" ${p.driver_type === 'escpos' ? 'selected' : ''}>🧾 RAW Struk (ESC/POS)</option>
+                            <option value="tspl" ${p.driver_type === 'tspl' ? 'selected' : ''}>🏷️ RAW Barcode (TSPL)</option>
+                            <option value="generic" ${p.driver_type === 'generic' ? 'selected' : ''}>📄 Dokumen A4</option>
+                        </select>
+                    </td>
+                    <td style="text-align: center;">
+                        <button class="btn btn-outline btn-sm" onclick="testPrint('${p.name}')">Tes</button>
+                        <button class="btn btn-outline btn-sm btn-danger" style="margin-left: 4px;" onclick="removeRow(this)">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderTargetInput(p) {
+            if (p.type === 'socket') return `<input type="text" class="row-target" value="${p.target || ''}" placeholder="192.168.1.200:9100">`;
+            if (p.type === 'relay') return `<input type="text" class="row-target" value="${p.target || ''}" placeholder="http://kispc.local:1237">`;
+            if (p.type === 'pdf') return `<input type="text" class="row-target" value="AutoSavePDF" disabled style="background:#f1f5f9;">`;
+            
+            let options = installedPrinters.map(pr => `
+                <option value="${pr.name}" ${pr.name === p.target ? 'selected' : ''}>${pr.name} ${pr.is_default ? '(Default)' : ''}</option>
+            `).join('');
+            if (!options) options = `<option value="">(Tidak ada printer terdeteksi)</option>`;
+            return `<select class="row-target">${options}</select>`;
+        }
+
+        function onTypeChange(sel) {
+            const tr = sel.closest('tr');
+            tr.cells[2].innerHTML = renderTargetInput({ type: sel.value, target: '' });
+        }
+
+        function addNewRow() {
+            const tbody = document.getElementById('printerTableBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="row-name" placeholder="TargetBaru"></td>
+                <td>
+                    <select class="row-type" onchange="onTypeChange(this)">
+                        <option value="usb">Local USB</option>
+                        <option value="socket">Network Socket (IP:9100)</option>
+                        <option value="relay">Relay PC Sebelah</option>
+                        <option value="pdf">Virtual PDF</option>
+                    </select>
+                </td>
+                <td>${renderTargetInput({ type: 'usb', target: '' })}</td>
+                <td>
+                    <select class="row-driver">
+                        <option value="auto" selected>✨ Universal (Driver Windows)</option>
+                        <option value="escpos">🧾 RAW Struk (ESC/POS)</option>
+                        <option value="tspl">🏷️ RAW Barcode (TSPL)</option>
+                    </select>
+                </td>
+                <td style="text-align: center;">
+                    <button class="btn btn-outline btn-sm btn-danger" onclick="removeRow(this)">Hapus</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function removeRow(btn) { btn.closest('tr').remove(); }
+
+        async function saveConfiguration() {
+            const rows = document.querySelectorAll('#printerTableBody tr');
+            const newPrinters = {};
+            rows.forEach(tr => {
+                const nameInput = tr.querySelector('.row-name');
+                if (!nameInput || !nameInput.value.trim()) return;
+                const name = nameInput.value.trim();
+                newPrinters[name] = {
+                    name: name,
+                    type: tr.querySelector('.row-type').value,
+                    target: tr.querySelector('.row-target').value,
+                    driver_type: tr.querySelector('.row-driver').value,
+                    auto_cut: true,
+                    paper_size: '80mm'
+                };
+            });
+
+            currentConfig.hospital_name = document.getElementById('cfgHospital').value;
+            currentConfig.pdf_save_dir = document.getElementById('cfgPdfDir').value;
+            currentConfig.auto_save_pdf = document.getElementById('cfgAutoPdf').checked;
+            currentConfig.github_repo = document.getElementById('cfgGitRepo').value;
+            currentConfig.auto_sync_interval_min = parseInt(document.getElementById('cfgGitInterval').value) || 60;
+            currentConfig.printers = newPrinters;
+
+            try {
+                await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+                showToast("Pengaturan berhasil disimpan!");
+            } catch (err) {
+                showToast("Gagal menyimpan: " + err);
+            }
+        }
+
+        async function testPrint(targetName) {
+            showToast("Mengirim uji cetak ke " + targetName + "...");
+            try {
+                const res = await fetch('/api/test-print', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target_name: targetName })
+                });
+                const data = await res.json();
+                showToast(data.status === 'success' ? "Berhasil mencetak ke " + targetName : data.message);
+                loadHistory();
+            } catch (err) {
+                showToast("Error uji cetak: " + err);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const list = await res.json();
+                const tbody = document.getElementById('historyTableBody');
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Belum ada riwayat cetak.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = list.map(h => {
+                    let pillClass = h.status === 'saved_pdf' ? 'pill-pdf' : (h.status === 'error' ? 'pill-error' : 'pill-success');
+                    const t = new Date(h.timestamp).toLocaleTimeString();
+                    return `<tr><td>${t}</td><td><code>${h.job_id}</code></td><td><strong>${h.printer_target}</strong></td><td><span class="pill ${pillClass}">${h.status}</span></td><td style="font-size: 12px; color: var(--text-muted);">${h.message || '-'}</td><td>${h.duration_ms} ms</td></tr>`;
+                }).join('');
+            } catch(e) {}
+        }
+
+        // ================= TEMPLATE DESIGNER FUNCTIONS =================
+        async function loadTemplatesList() {
+            try {
+                const res = await fetch('/printgo/templates');
+                const list = await res.json();
+                const sel = document.getElementById('selTemplate');
+                sel.innerHTML = list.map(t => `<option value="${t.id}">${t.name} (${t.paper.width_mm}x${t.paper.height_mm}mm)</option>`).join('');
+                if (list.length > 0) {
+                    loadTemplateDetail(list[0].id);
+                }
+            } catch (err) {
+                showToast("Gagal memuat template: " + err);
+            }
+        }
+
+        async function loadTemplateDetail(id) {
+            try {
+                const res = await fetch('/printgo/templates?id=' + id);
+                currentTemplate = await res.json();
+                document.getElementById('paperWidth').value = currentTemplate.paper.width_mm;
+                document.getElementById('paperHeight').value = currentTemplate.paper.height_mm;
+                document.getElementById('sampleDataJson').value = JSON.stringify(currentTemplate.sample_data || {}, null, 2);
+                updateCanvasSize();
+                renderCanvasElements();
+                renderElementList();
+                selectedElIndex = -1;
+                renderPropEditor();
+            } catch (err) {
+                showToast("Gagal memuat detail template: " + err);
+            }
+        }
+
+        function updateCanvasSize() {
+            const w = parseFloat(document.getElementById('paperWidth').value) || 50;
+            const h = parseFloat(document.getElementById('paperHeight').value) || 30;
+            const canvas = document.getElementById('canvasPaper');
+            canvas.style.width = (w * MM_TO_PX) + 'px';
+            canvas.style.height = (h * MM_TO_PX) + 'px';
+            if (currentTemplate) {
+                currentTemplate.paper.width_mm = w;
+                currentTemplate.paper.height_mm = h;
+            }
+        }
+
+        function applyPaperPreset(preset) {
+            const [w, h] = preset.split('x').map(Number);
+            document.getElementById('paperWidth').value = w;
+            document.getElementById('paperHeight').value = h;
+            updateCanvasSize();
+        }
+
+        function renderCanvasElements() {
+            if (!currentTemplate) return;
+            const canvas = document.getElementById('canvasPaper');
+            canvas.innerHTML = '';
+
+            let sampleData = {};
+            try {
+                sampleData = JSON.parse(document.getElementById('sampleDataJson').value || '{}');
+            } catch(e) {}
+
+            const interpolate = (txt) => {
+                let res = txt || '';
+                for (const k in sampleData) {
+                    res = res.replaceAll('{{.' + k + '}}', sampleData[k]);
+                }
+                return res;
+            };
+
+            currentTemplate.elements.forEach((el, idx) => {
+                const div = document.createElement('div');
+                div.className = 'canvas-el' + (selectedElIndex === idx ? ' selected' : '');
+                div.style.left = (el.x_mm * MM_TO_PX) + 'px';
+                div.style.top = (el.y_mm * MM_TO_PX) + 'px';
+
+                if (el.type === 'text') {
+                    div.style.fontSize = (el.font_size || 9) + 'pt';
+                    div.style.fontFamily = el.font_family || 'sans-serif';
+                    div.style.fontWeight = el.font_weight || 'normal';
+                    div.style.textAlign = el.align || 'left';
+                    div.innerText = interpolate(el.content);
+                } else if (el.type === 'barcode') {
+                    div.style.width = ((el.width_mm || 40) * MM_TO_PX) + 'px';
+                    div.style.height = ((el.height_mm || 10) * MM_TO_PX) + 'px';
+                    div.style.background = 'repeating-linear-gradient(90deg, #000 0, #000 2px, #fff 2px, #fff 4px)';
+                } else if (el.type === 'line') {
+                    div.style.width = ((el.width_mm || 40) * MM_TO_PX) + 'px';
+                    div.style.height = '1px';
+                    div.style.borderTop = ((el.thickness_mm || 0.4) * 2) + 'px ' + (el.style || 'solid') + ' #000';
+                }
+
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    selectedElIndex = idx;
+                    renderCanvasElements();
+                    renderPropEditor();
+                };
+
+                canvas.appendChild(div);
+            });
+        }
+
+        function renderElementList() {
+            const list = document.getElementById('elementList');
+            if (!currentTemplate) return;
+            list.innerHTML = currentTemplate.elements.map((el, idx) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-radius: 4px; background: ${selectedElIndex === idx ? '#e0f2fe' : '#f8fafc'}; font-size: 12px; cursor: pointer;" onclick="selectElement(${idx})">
+                    <span>${el.type.toUpperCase()}: ${el.content ? el.content.substring(0, 16) : ''}</span>
+                    <button class="btn btn-outline btn-sm btn-danger" style="padding: 2px 6px;" onclick="deleteElement(${idx}); event.stopPropagation();">×</button>
+                </div>
+            `).join('');
+        }
+
+        function selectElement(idx) {
+            selectedElIndex = idx;
+            renderCanvasElements();
+            renderPropEditor();
+            renderElementList();
+        }
+
+        function addElement(type) {
+            if (!currentTemplate) return;
+            const newEl = {
+                id: 'el_' + Date.now(),
+                type: type,
+                x_mm: 5.0,
+                y_mm: 5.0 + (currentTemplate.elements.length * 3),
+                content: type === 'text' ? 'Teks Baru' : '{{.barcode}}',
+                font_family: 'Arial',
+                font_size: 9.0,
+                font_weight: 'normal',
+                align: 'left',
+                width_mm: type === 'barcode' ? 40.0 : 50.0,
+                height_mm: type === 'barcode' ? 8.0 : 0.0
+            };
+            currentTemplate.elements.push(newEl);
+            selectedElIndex = currentTemplate.elements.length - 1;
+            renderCanvasElements();
+            renderElementList();
+            renderPropEditor();
+        }
+
+        function deleteElement(idx) {
+            currentTemplate.elements.splice(idx, 1);
+            selectedElIndex = -1;
+            renderCanvasElements();
+            renderElementList();
+            renderPropEditor();
+        }
+
+        function renderPropEditor() {
+            const container = document.getElementById('propEditor');
+            if (selectedElIndex < 0 || !currentTemplate || !currentTemplate.elements[selectedElIndex]) {
+                container.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Pilih elemen pada kanvas untuk mengedit propertinya.</p>`;
+                return;
+            }
+            const el = currentTemplate.elements[selectedElIndex];
+            container.innerHTML = `
+                <div class="grid-2">
+                    <div class="prop-group">
+                        <label>X (mm):</label>
+                        <input type="number" step="0.5" value="${el.x_mm}" onchange="updateProp('x_mm', parseFloat(this.value))">
+                    </div>
+                    <div class="prop-group">
+                        <label>Y (mm):</label>
+                        <input type="number" step="0.5" value="${el.y_mm}" onchange="updateProp('y_mm', parseFloat(this.value))">
+                    </div>
+                </div>
+                ${el.type === 'text' ? `
+                    <div class="prop-group">
+                        <label>Isi Teks / Variabel (cth: {{.nama}}):</label>
+                        <input type="text" value="${el.content || ''}" oninput="updateProp('content', this.value)">
+                    </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Ukuran Font (pt):</label>
+                            <input type="number" step="0.5" value="${el.font_size || 9}" onchange="updateProp('font_size', parseFloat(this.value))">
+                        </div>
+                        <div class="prop-group">
+                            <label>Tebal (Bold):</label>
+                            <select onchange="updateProp('font_weight', this.value)">
+                                <option value="normal" ${el.font_weight === 'normal' ? 'selected' : ''}>Normal</option>
+                                <option value="bold" ${el.font_weight === 'bold' ? 'selected' : ''}>Tebal (Bold)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="prop-group">
+                        <label>Rata Teks:</label>
+                        <select onchange="updateProp('align', this.value)">
+                            <option value="left" ${el.align === 'left' ? 'selected' : ''}>Kiri (Left)</option>
+                            <option value="center" ${el.align === 'center' ? 'selected' : ''}>Tengah (Center)</option>
+                            <option value="right" ${el.align === 'right' ? 'selected' : ''}>Kanan (Right)</option>
+                        </select>
+                    </div>
+                ` : ''}
+                ${el.type === 'barcode' ? `
+                    <div class="prop-group">
+                        <label>Variabel Barcode (cth: {{.barcode}}):</label>
+                        <input type="text" value="${el.content || ''}" oninput="updateProp('content', this.value)">
+                    </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Lebar Barcode (mm):</label>
+                            <input type="number" value="${el.width_mm || 40}" onchange="updateProp('width_mm', parseFloat(this.value))">
+                        </div>
+                        <div class="prop-group">
+                            <label>Tinggi Barcode (mm):</label>
+                            <input type="number" value="${el.height_mm || 8}" onchange="updateProp('height_mm', parseFloat(this.value))">
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function updateProp(key, val) {
+            if (selectedElIndex >= 0 && currentTemplate && currentTemplate.elements[selectedElIndex]) {
+                currentTemplate.elements[selectedElIndex][key] = val;
+                renderCanvasElements();
+            }
+        }
+
+        async function saveCurrentTemplate() {
+            if (!currentTemplate) return;
+            try {
+                let sampleData = {};
+                try { sampleData = JSON.parse(document.getElementById('sampleDataJson').value || '{}'); } catch(e) {}
+                currentTemplate.sample_data = sampleData;
+
+                const res = await fetch('/printgo/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentTemplate)
+                });
+                const data = await res.json();
+                showToast("Template '" + currentTemplate.name + "' berhasil disimpan!");
+            } catch (err) {
+                showToast("Gagal menyimpan template: " + err);
+            }
+        }
+
+        async function testPrintCurrentTemplate(isViewOnly) {
+            if (!currentTemplate) return;
+            showToast(isViewOnly ? "Membuat preview PDF..." : "Mengirim test cetak...");
+            try {
+                let sampleData = {};
+                try { sampleData = JSON.parse(document.getElementById('sampleDataJson').value || '{}'); } catch(e) {}
+
+                const res = await fetch('/printgo/templates/test-print', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        template_id: currentTemplate.id,
+                        printer_target: 'LabelPasien',
+                        data: sampleData,
+                        view: isViewOnly
+                    })
+                });
+                const data = await res.json();
+                if (data.file_path) {
+                    showToast("Dokumen dibuat: " + data.file_path);
+                } else {
+                    showToast(data.message || "Test cetak selesai!");
+                }
+            } catch (err) {
+                showToast("Error test cetak: " + err);
+            }
+        }
+
+        // ================= GITHUB UPDATER FUNCTIONS =================
+        async function loadSyncStatus() {
+            try {
+                const res = await fetch('/printgo/updater/status');
+                const st = await res.json();
+                document.getElementById('syncBadge').innerText = (st.status || 'SIAP').toUpperCase();
+                document.getElementById('syncMsg').innerText = st.message || 'Terhubung';
+                if (st.last_check_time && st.last_check_time !== '0001-01-01T00:00:00Z') {
+                    document.getElementById('syncLastTime').innerText = new Date(st.last_check_time).toLocaleString();
+                }
+            } catch (e) {}
+        }
+
+        async function syncTemplatesNow() {
+            showToast("Memulai sinkronisasi template dengan GitHub...");
+            try {
+                const res = await fetch('/printgo/updater/sync', { method: 'POST' });
+                const st = await res.json();
+                loadSyncStatus();
+                showToast(st.message || "Sinkronisasi selesai!");
+            } catch (err) {
+                showToast("Gagal sinkronisasi: " + err);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        window.onload = loadAll;
+    </script>
+</body>
+</html>

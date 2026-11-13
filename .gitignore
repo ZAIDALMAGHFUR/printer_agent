@@ -1,0 +1,9 @@
+# Binaries
+bin/*.exe~
+*.exe~
+*.tmp
+
+# Logs and OS files
+*.log
+Thumbs.db
+.DS_Store

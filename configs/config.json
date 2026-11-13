@@ -1,0 +1,66 @@
+{
+  "server_port": 1237,
+  "hospital_name": "RSU ASHAVIN",
+  "auto_save_pdf": true,
+  "pdf_save_dir": "C:\\SIMRS_PDF",
+  "queue_worker_count": 4,
+  "timeout_sec": 5,
+  "github_repo": "https://github.com/ZAIDALMAGHFUR/printer_agent",
+  "auto_sync_interval_min": 60,
+  "printers": {
+    "Billing": {
+      "name": "Billing",
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false,
+      "description": "Dokumen rincian biaya / billing A4"
+    },
+    "CetakAntrian": {
+      "name": "CetakAntrian",
+      "type": "usb",
+      "target": "EPSON TM-T82X Receipt",
+      "driver_type": "escpos",
+      "paper_size": "80mm",
+      "auto_cut": true,
+      "description": "Printer antrian loket / kiosk (Epson TM-T82X)"
+    },
+    "CetakSep": {
+      "name": "CetakSep",
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false,
+      "description": "Surat Eligibilitas Peserta (SEP BPJS)"
+    },
+    "Kwitansi": {
+      "name": "Kwitansi",
+      "type": "usb",
+      "target": "EPSON TM-T82X Receipt",
+      "driver_type": "escpos",
+      "paper_size": "80mm",
+      "auto_cut": true,
+      "description": "Printer kwitansi kasir"
+    },
+    "LabelFarmasi": {
+      "name": "LabelFarmasi",
+      "type": "usb",
+      "target": "TSC TTP-244 Pro",
+      "driver_type": "tspl",
+      "paper_size": "50x30mm",
+      "auto_cut": false,
+      "description": "Printer barcode etiket obat farmasi (TSC)"
+    },
+    "LabelPasien": {
+      "name": "LabelPasien",
+      "type": "usb",
+      "target": "TSC TTP-244 Pro",
+      "driver_type": "tspl",
+      "paper_size": "50x30mm",
+      "auto_cut": false,
+      "description": "Printer barcode identitas pasien"
+    }
+  }
+}
