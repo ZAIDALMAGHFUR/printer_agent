@@ -57,4 +57,21 @@ func TestDynamicTemplateManager(t *testing.T) {
 		t.Fatalf("File PDF antrian tidak valid: %v", err)
 	}
 	t.Logf("Berhasil render PDF antrian (Gambar 2): %s (%d bytes)", antrianPDF, fi2.Size())
+
+	// 3. Test Bukti Pendaftaran Pasien / Tracer 80mm
+	buktiTmpl, found := actualTM.GetTemplate("bukti_pendaftaran")
+	if !found {
+		t.Fatalf("Template 'bukti_pendaftaran' harusnya ditemukan di folder templates")
+	}
+
+	buktiPDF, err := actualTM.RenderToPDF(buktiTmpl, buktiTmpl.SampleData, saveDir, "TEST-BUKTI")
+	if err != nil {
+		t.Fatalf("Gagal render bukti_pendaftaran ke PDF: %v", err)
+	}
+
+	fi3, err := os.Stat(buktiPDF)
+	if err != nil || fi3.Size() == 0 {
+		t.Fatalf("File PDF bukti_pendaftaran tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF bukti_pendaftaran: %s (%d bytes)", buktiPDF, fi3.Size())
 }

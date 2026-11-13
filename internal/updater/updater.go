@@ -216,7 +216,7 @@ func (u *UpdaterService) SyncTemplates() error {
 }
 
 func (u *UpdaterService) fallbackRawSync(owner, repo string) error {
-	standardTemplates := []string{"label_pasien.json", "antrian.json", "etiket_obat.json"}
+	standardTemplates := []string{"label_pasien.json", "antrian.json", "bukti_pendaftaran.json"}
 	successCount := 0
 
 	for _, name := range standardTemplates {
