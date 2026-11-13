@@ -239,35 +239,61 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 				fontSize = 9.0
 			}
 
-			fontTag := "F1" // Times
+			isBold := strings.EqualFold(el.FontWeight, "bold")
+			fontTag := "F1" // Times-Roman
+			if isBold {
+				fontTag = "F1B"
+			}
 			if strings.EqualFold(el.FontFamily, "arial") || strings.EqualFold(el.FontFamily, "helvetica") {
-				fontTag = "F2"
-			} else if strings.EqualFold(el.FontFamily, "courier") {
-				fontTag = "F3"
-			}
-
-			safeText := strings.ReplaceAll(textVal, "\\", "\\\\")
-			safeText = strings.ReplaceAll(safeText, "(", "\\(")
-			safeText = strings.ReplaceAll(safeText, ")", "\\)")
-
-			contentStream.WriteString("BT\n")
-			contentStream.WriteString(fmt.Sprintf("/%s %.2f Tf\n", fontTag, fontSize))
-
-			// Hitung alignment
-			renderX := xPt
-			estWidth := float64(len(textVal)) * fontSize * 0.52
-			if el.Align == "center" {
-				renderX = xPt - (estWidth / 2)
-				if renderX < 2 {
-					renderX = 2
+				if isBold {
+					fontTag = "F2B"
+				} else {
+					fontTag = "F2"
 				}
-			} else if el.Align == "right" {
-				renderX = xPt - estWidth
+			} else if strings.EqualFold(el.FontFamily, "courier") {
+				if isBold {
+					fontTag = "F3B"
+				} else {
+					fontTag = "F3"
+				}
 			}
 
-			contentStream.WriteString(fmt.Sprintf("%.2f %.2f Td\n", renderX, yPt))
-			contentStream.WriteString(fmt.Sprintf("(%s) Tj\n", safeText))
-			contentStream.WriteString("ET\n")
+			lines := strings.Split(textVal, "\n")
+			lineHeightPt := fontSize * 1.25
+			for lineIdx, lineStr := range lines {
+				if lineStr == "" {
+					continue
+				}
+				curY := yPt - (float64(lineIdx) * lineHeightPt)
+				safeText := strings.ReplaceAll(lineStr, "\\", "\\\\")
+				safeText = strings.ReplaceAll(safeText, "(", "\\(")
+				safeText = strings.ReplaceAll(safeText, ")", "\\)")
+
+				estWidth := float64(len(lineStr)) * fontSize * 0.52
+				renderX := xPt
+				if el.Align == "center" {
+					if el.Width > 0 {
+						renderX = xPt + ((el.Width * mm2pt) - estWidth)/2
+					} else {
+						renderX = (widthPt - estWidth) / 2
+					}
+					if renderX < 2 {
+						renderX = 2
+					}
+				} else if el.Align == "right" {
+					if el.Width > 0 {
+						renderX = xPt + (el.Width * mm2pt) - estWidth
+					} else {
+						renderX = widthPt - xPt - estWidth
+					}
+				}
+
+				contentStream.WriteString("BT\n")
+				contentStream.WriteString(fmt.Sprintf("/%s %.2f Tf\n", fontTag, fontSize))
+				contentStream.WriteString(fmt.Sprintf("%.2f %.2f Td\n", renderX, curY))
+				contentStream.WriteString(fmt.Sprintf("(%s) Tj\n", safeText))
+				contentStream.WriteString("ET\n")
+			}
 
 		case "line", "divider":
 			lineWidthPt := el.Width * mm2pt
@@ -276,7 +302,12 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 			}
 			thicknessPt := el.Thickness * mm2pt
 			if thicknessPt <= 0 {
-				thicknessPt = 0.5
+				thicknessPt = 0.4
+			}
+
+			startX := xPt
+			if el.Align == "center" {
+				startX = (widthPt - lineWidthPt) / 2
 			}
 
 			contentStream.WriteString(fmt.Sprintf("%.2f w\n", thicknessPt))
@@ -285,8 +316,8 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 			} else {
 				contentStream.WriteString("[] 0 d\n")
 			}
-			contentStream.WriteString(fmt.Sprintf("%.2f %.2f m\n", xPt, yPt))
-			contentStream.WriteString(fmt.Sprintf("%.2f %.2f l\nS\n", xPt+lineWidthPt, yPt))
+			contentStream.WriteString(fmt.Sprintf("%.2f %.2f m\n", startX, yPt))
+			contentStream.WriteString(fmt.Sprintf("%.2f %.2f l\nS\n", startX+lineWidthPt, yPt))
 
 		case "barcode":
 			barcodeVal := interpolate(el.Content)
@@ -302,13 +333,18 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 				bcWidthPt = widthPt - (2 * xPt)
 			}
 
+			startX := xPt
+			if el.Align == "center" {
+				startX = (widthPt - bcWidthPt) / 2
+			}
+
 			bits := EncodeCode128B(barcodeVal)
 			if len(bits) > 0 {
 				moduleWidth := bcWidthPt / float64(len(bits))
 				contentStream.WriteString("0 0 0 rg\n")
 				for i, isBar := range bits {
 					if isBar {
-						bx := xPt + (float64(i) * moduleWidth)
+						bx := startX + (float64(i) * moduleWidth)
 						by := yPt - bcHeightPt
 						contentStream.WriteString(fmt.Sprintf("%.2f %.2f %.2f %.2f re\nf\n", bx, by, moduleWidth, bcHeightPt))
 					}
@@ -346,7 +382,7 @@ func buildMinimalPDF(widthPt, heightPt float64, streamBytes []byte, fontIndices 
 
 	// 3: Page
 	addObj()
-	buf.WriteString(fmt.Sprintf("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %.2f %.2f] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >> >> >>\nendobj\n", widthPt, heightPt))
+	buf.WriteString(fmt.Sprintf("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %.2f %.2f] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F1B 6 0 R /F2 7 0 R /F2B 8 0 R /F3 9 0 R /F3B 10 0 R >> >> >>\nendobj\n", widthPt, heightPt))
 
 	// 4: Stream
 	addObj()
@@ -354,17 +390,29 @@ func buildMinimalPDF(widthPt, heightPt float64, streamBytes []byte, fontIndices 
 	buf.Write(streamBytes)
 	buf.WriteString("\nendstream\nendobj\n")
 
-	// 5: Font Times
+	// 5: Font Times-Roman
 	addObj()
 	buf.WriteString("5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>\nendobj\n")
 
-	// 6: Font Helvetica
+	// 6: Font Times-Bold
 	addObj()
-	buf.WriteString("6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
+	buf.WriteString("6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold >>\nendobj\n")
 
-	// 7: Font Courier
+	// 7: Font Helvetica
 	addObj()
-	buf.WriteString("7 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n")
+	buf.WriteString("7 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
+
+	// 8: Font Helvetica-Bold
+	addObj()
+	buf.WriteString("8 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n")
+
+	// 9: Font Courier
+	addObj()
+	buf.WriteString("9 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n")
+
+	// 10: Font Courier-Bold
+	addObj()
+	buf.WriteString("10 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>\nendobj\n")
 
 	// Xref
 	xrefOffset := buf.Len()

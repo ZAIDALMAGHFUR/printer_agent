@@ -538,12 +538,36 @@
             document.getElementById('paperWidth').value = w;
             document.getElementById('paperHeight').value = h;
             updateCanvasSize();
+            if (preset === '50x30') {
+                loadTemplateDetail('label_pasien');
+            } else if (preset === '80x110' || preset === '80x115') {
+                loadTemplateDetail('antrian');
+            }
+        }
+
+        function centerElementOnPaper() {
+            if (selectedElIndex >= 0 && currentTemplate && currentTemplate.elements[selectedElIndex]) {
+                const el = currentTemplate.elements[selectedElIndex];
+                el.align = 'center';
+                const paperW = currentTemplate.paper.width_mm || 50;
+                if (el.type === 'line' || el.type === 'barcode') {
+                    const elW = el.width_mm || 40;
+                    el.x_mm = Math.max(0, Math.round(((paperW - elW) / 2) * 2) / 2);
+                } else {
+                    el.x_mm = paperW / 2;
+                }
+                renderCanvasElements();
+                renderPropEditor();
+                showToast("Elemen berhasil diposisikan ke tengah kertas");
+            }
         }
 
         function renderCanvasElements() {
             if (!currentTemplate) return;
             const canvas = document.getElementById('canvasPaper');
             canvas.innerHTML = '';
+
+            const paperW = currentTemplate.paper.width_mm || 50;
 
             let sampleData = {};
             try {
@@ -561,23 +585,60 @@
             currentTemplate.elements.forEach((el, idx) => {
                 const div = document.createElement('div');
                 div.className = 'canvas-el' + (selectedElIndex === idx ? ' selected' : '');
-                div.style.left = (el.x_mm * MM_TO_PX) + 'px';
                 div.style.top = (el.y_mm * MM_TO_PX) + 'px';
 
                 if (el.type === 'text') {
                     div.style.fontSize = (el.font_size || 9) + 'pt';
-                    div.style.fontFamily = el.font_family || 'sans-serif';
+                    div.style.fontFamily = el.font_family || 'Arial';
                     div.style.fontWeight = el.font_weight || 'normal';
                     div.style.textAlign = el.align || 'left';
+                    div.style.whiteSpace = 'pre-wrap';
+                    div.style.lineHeight = '1.25';
                     div.innerText = interpolate(el.content);
+
+                    if (el.align === 'center') {
+                        if (el.width_mm && el.width_mm > 0) {
+                            div.style.left = (el.x_mm * MM_TO_PX) + 'px';
+                            div.style.width = (el.width_mm * MM_TO_PX) + 'px';
+                        } else {
+                            div.style.left = '0px';
+                            div.style.width = (paperW * MM_TO_PX) + 'px';
+                        }
+                    } else if (el.align === 'right') {
+                        if (el.width_mm && el.width_mm > 0) {
+                            div.style.left = (el.x_mm * MM_TO_PX) + 'px';
+                            div.style.width = (el.width_mm * MM_TO_PX) + 'px';
+                        } else {
+                            div.style.left = '0px';
+                            div.style.width = ((paperW - el.x_mm) * MM_TO_PX) + 'px';
+                        }
+                    } else {
+                        div.style.left = (el.x_mm * MM_TO_PX) + 'px';
+                        if (el.width_mm && el.width_mm > 0) {
+                            div.style.width = (el.width_mm * MM_TO_PX) + 'px';
+                        }
+                    }
                 } else if (el.type === 'barcode') {
-                    div.style.width = ((el.width_mm || 40) * MM_TO_PX) + 'px';
-                    div.style.height = ((el.height_mm || 10) * MM_TO_PX) + 'px';
+                    const bcW = (el.width_mm || 40);
+                    let bcX = el.x_mm;
+                    if (el.align === 'center') {
+                        bcX = (paperW - bcW) / 2;
+                    }
+                    div.style.left = (bcX * MM_TO_PX) + 'px';
+                    div.style.width = (bcW * MM_TO_PX) + 'px';
+                    div.style.height = ((el.height_mm || 8) * MM_TO_PX) + 'px';
                     div.style.background = 'repeating-linear-gradient(90deg, #000 0, #000 2px, #fff 2px, #fff 4px)';
                 } else if (el.type === 'line') {
-                    div.style.width = ((el.width_mm || 40) * MM_TO_PX) + 'px';
-                    div.style.height = '1px';
-                    div.style.borderTop = ((el.thickness_mm || 0.4) * 2) + 'px ' + (el.style || 'solid') + ' #000';
+                    const lineW = (el.width_mm || 40);
+                    let lineX = el.x_mm;
+                    if (el.align === 'center') {
+                        lineX = (paperW - lineW) / 2;
+                    }
+                    div.style.left = (lineX * MM_TO_PX) + 'px';
+                    div.style.width = (lineW * MM_TO_PX) + 'px';
+                    div.style.height = '2px';
+                    const th = (el.thickness_mm || 0.35) * 2;
+                    div.style.borderTop = `${th}px ${el.style || 'solid'} #334155`;
                 }
 
                 div.style.cursor = 'move';
@@ -683,14 +744,24 @@
                 </div>
                 ${el.type === 'text' ? `
                     <div class="prop-group">
-                        <label>Isi Teks / Variabel (cth: {{.nama}}):</label>
-                        <input type="text" value="${el.content || ''}" oninput="updateProp('content', this.value)">
+                        <label>Isi Teks / Variabel (bisa multi-baris):</label>
+                        <textarea rows="3" oninput="updateProp('content', this.value)">${el.content || ''}</textarea>
                     </div>
                     <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Jenis Font:</label>
+                            <select onchange="updateProp('font_family', this.value)">
+                                <option value="Times New Roman" ${el.font_family === 'Times New Roman' ? 'selected' : ''}>Times New Roman (Serif)</option>
+                                <option value="Arial" ${el.font_family === 'Arial' || el.font_family === 'Helvetica' ? 'selected' : ''}>Arial / Sans-Serif</option>
+                                <option value="Courier" ${el.font_family === 'Courier' ? 'selected' : ''}>Courier (Monospace)</option>
+                            </select>
+                        </div>
                         <div class="prop-group">
                             <label>Ukuran Font (pt):</label>
                             <input type="number" step="0.5" value="${el.font_size || 9}" onchange="updateProp('font_size', parseFloat(this.value))">
                         </div>
+                    </div>
+                    <div class="grid-2">
                         <div class="prop-group">
                             <label>Tebal (Bold):</label>
                             <select onchange="updateProp('font_weight', this.value)">
@@ -698,15 +769,45 @@
                                 <option value="bold" ${el.font_weight === 'bold' ? 'selected' : ''}>Tebal (Bold)</option>
                             </select>
                         </div>
+                        <div class="prop-group">
+                            <label>Rata Teks:</label>
+                            <select onchange="updateProp('align', this.value)">
+                                <option value="left" ${el.align === 'left' ? 'selected' : ''}>Kiri (Left)</option>
+                                <option value="center" ${el.align === 'center' ? 'selected' : ''}>Tengah (Center)</option>
+                                <option value="right" ${el.align === 'right' ? 'selected' : ''}>Kanan (Right)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="prop-group">
-                        <label>Rata Teks:</label>
-                        <select onchange="updateProp('align', this.value)">
-                            <option value="left" ${el.align === 'left' ? 'selected' : ''}>Kiri (Left)</option>
-                            <option value="center" ${el.align === 'center' ? 'selected' : ''}>Tengah (Center)</option>
-                            <option value="right" ${el.align === 'right' ? 'selected' : ''}>Kanan (Right)</option>
-                        </select>
+                    <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 4px;" onclick="centerElementOnPaper()">↔ Pusatkan Teks ke Kertas</button>
+                ` : ''}
+                ${el.type === 'line' ? `
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Panjang Garis (mm):</label>
+                            <input type="number" step="1" value="${el.width_mm || 40}" onchange="updateProp('width_mm', parseFloat(this.value))">
+                        </div>
+                        <div class="prop-group">
+                            <label>Ketebalan (mm):</label>
+                            <input type="number" step="0.05" value="${el.thickness_mm || 0.35}" onchange="updateProp('thickness_mm', parseFloat(this.value))">
+                        </div>
                     </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Tipe Garis:</label>
+                            <select onchange="updateProp('style', this.value)">
+                                <option value="solid" ${el.style === 'solid' ? 'selected' : ''}>Garis Lurus (Solid)</option>
+                                <option value="dashed" ${el.style === 'dashed' ? 'selected' : ''}>Garis Putus (Dashed)</option>
+                            </select>
+                        </div>
+                        <div class="prop-group">
+                            <label>Posisi:</label>
+                            <select onchange="updateProp('align', this.value)">
+                                <option value="center" ${el.align === 'center' ? 'selected' : ''}>Rata Tengah Kertas</option>
+                                <option value="left" ${el.align === 'left' ? 'selected' : ''}>Kustom Posisi X</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 4px;" onclick="centerElementOnPaper()">↔ Pusatkan Garis ke Tengah Kertas</button>
                 ` : ''}
                 ${el.type === 'barcode' ? `
                     <div class="prop-group">
@@ -716,13 +817,14 @@
                     <div class="grid-2">
                         <div class="prop-group">
                             <label>Lebar Barcode (mm):</label>
-                            <input type="number" value="${el.width_mm || 40}" onchange="updateProp('width_mm', parseFloat(this.value))">
+                            <input type="number" value="${el.width_mm || 46}" onchange="updateProp('width_mm', parseFloat(this.value))">
                         </div>
                         <div class="prop-group">
                             <label>Tinggi Barcode (mm):</label>
                             <input type="number" value="${el.height_mm || 8}" onchange="updateProp('height_mm', parseFloat(this.value))">
                         </div>
                     </div>
+                    <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 4px;" onclick="centerElementOnPaper()">↔ Pusatkan Barcode ke Tengah Kertas</button>
                 ` : ''}
             `;
         }

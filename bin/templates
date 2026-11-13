@@ -2,9 +2,9 @@
   "id": "label_pasien",
   "name": "Label Pasien 50x30mm",
   "category": "label",
-  "description": "Stiker barcode identitas pasien untuk RM / gelang / tabung lab",
-  "version": "1.0.0",
-  "updated_at": "2026-11-13T09:10:00Z",
+  "description": "Label stiker barcode identitas pasien 50x30mm",
+  "version": "1.1.0",
+  "updated_at": "2026-11-13T09:40:00Z",
   "paper": {
     "width_mm": 50,
     "height_mm": 30,
@@ -17,10 +17,10 @@
       "id": "el_nama",
       "type": "text",
       "x_mm": 2.0,
-      "y_mm": 3.0,
+      "y_mm": 3.5,
       "content": "{{.nama}}",
       "font_family": "Times New Roman",
-      "font_size": 11,
+      "font_size": 11.0,
       "font_weight": "bold",
       "align": "left"
     },
@@ -28,10 +28,10 @@
       "id": "el_mr",
       "type": "text",
       "x_mm": 2.0,
-      "y_mm": 7.0,
+      "y_mm": 7.5,
       "content": "No. MR :   {{.no_mr}}   -   {{.tgl_lahir}}",
       "font_family": "Times New Roman",
-      "font_size": 8.5,
+      "font_size": 9.0,
       "font_weight": "bold",
       "align": "left"
     },
@@ -39,10 +39,10 @@
       "id": "el_umur",
       "type": "text",
       "x_mm": 2.0,
-      "y_mm": 11.0,
+      "y_mm": 11.5,
       "content": "Umur   :   {{.umur}}",
       "font_family": "Times New Roman",
-      "font_size": 8.5,
+      "font_size": 9.0,
       "font_weight": "normal",
       "align": "left"
     },
@@ -50,7 +50,7 @@
       "id": "el_alamat",
       "type": "text",
       "x_mm": 2.0,
-      "y_mm": 15.0,
+      "y_mm": 15.5,
       "content": "KP        :   {{.alamat}}",
       "font_family": "Times New Roman",
       "font_size": 8.0,
@@ -61,21 +61,20 @@
       "id": "el_barcode",
       "type": "barcode",
       "x_mm": 2.0,
-      "y_mm": 18.5,
+      "y_mm": 18.0,
       "width_mm": 46.0,
-      "height_mm": 7.5,
+      "height_mm": 8.0,
       "content": "{{.barcode}}",
-      "format": "CODE128",
-      "show_text": false
+      "format": "CODE128"
     },
     {
       "id": "el_barcode_val",
       "type": "text",
       "x_mm": 2.0,
-      "y_mm": 28.2,
+      "y_mm": 28.5,
       "content": "{{.barcode}}",
       "font_family": "Times New Roman",
-      "font_size": 8.0,
+      "font_size": 8.5,
       "font_weight": "normal",
       "align": "left"
     },
@@ -83,10 +82,10 @@
       "id": "el_waktu",
       "type": "text",
       "x_mm": 28.0,
-      "y_mm": 28.2,
+      "y_mm": 28.5,
       "content": "{{.waktu}}",
       "font_family": "Times New Roman",
-      "font_size": 8.0,
+      "font_size": 8.5,
       "font_weight": "normal",
       "align": "left"
     }
@@ -101,4 +100,3 @@
     "waktu": "2026-11-02 12:15:40"
   }
 }
-
