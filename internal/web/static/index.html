@@ -261,17 +261,20 @@
                         <label>Preset Cepat Ukuran:</label>
                         <select id="presetPaperSelect" onchange="applyPaperPreset(this.value)">
                             <option value="custom">Kustom (Tarik Manual / Ketik)</option>
+                            <option value="86x54">Kartu Pasien (86 x 54 mm CR80)</option>
                             <option value="50x30">Label Pasien (50 x 30 mm)</option>
+                            <option value="80x100">Tracer Masuk (80 x 100 mm)</option>
                             <option value="80x115">Struk Antrian Kiosk (80 x 115 mm)</option>
                             <option value="80x130">Bukti Pendaftaran / Tracer (80 x 130 mm)</option>
+                            <option value="100x28">Gelang Pasien (100 x 28 mm)</option>
                             <option value="80x80">Struk Pendek (80 x 80 mm)</option>
-                            <option value="25x280">Gelang Pasien (25 x 280 mm)</option>
+                            <option value="25x280">Gelang Pasien Strip (25 x 280 mm)</option>
                         </select>
                     </div>
                     <div class="grid-2">
                         <div class="prop-group">
                             <label>Lebar (mm):</label>
-                            <input type="number" id="paperWidth" value="80" step="1" min="20" max="300" oninput="updateCanvasFromInputs()">
+                            <input type="number" id="paperWidth" value="80" step="1" min="15" max="300" oninput="updateCanvasFromInputs()">
                         </div>
                         <div class="prop-group">
                             <label>Tinggi (mm):</label>
@@ -287,6 +290,7 @@
                         <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('text')">➕ Teks / Variabel</button>
                         <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('barcode')">➕ Barcode Code 128</button>
                         <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('line')">➕ Garis Divider</button>
+                        <button class="btn btn-outline btn-sm" style="justify-content: flex-start;" onclick="addElement('box')">➕ Kotak / Banner (Box)</button>
                     </div>
 
                     <div class="card-title" style="margin: 18px 0 10px 0; font-size: 14px;">📋 Daftar Elemen</div>
@@ -376,11 +380,14 @@
                 <div class="prop-group">
                     <label>Preset Format Kertas:</label>
                     <select id="modalTmplPreset" onchange="onModalPresetChange(this.value)">
-                        <option value="80x130">Struk Bukti Pendaftaran / Tracer (80 × 130 mm)</option>
+                        <option value="86x54">Kartu Pasien ID Card (86 × 54 mm CR80)</option>
+                        <option value="80x100">Tracer Masuk (80 × 100 mm)</option>
+                        <option value="80x130">Struk Bukti Pendaftaran (80 × 130 mm)</option>
                         <option value="80x115">Struk Antrian Kiosk (80 × 115 mm)</option>
                         <option value="50x30">Label Pasien / Farmasi (50 × 30 mm)</option>
-                        <option value="25x280">Gelang Pasien Thermal (25 × 280 mm)</option>
+                        <option value="100x28">Gelang Pasien Thermal (100 × 28 mm)</option>
                         <option value="80x80">Struk Kasir Standar (80 × 80 mm)</option>
+                        <option value="25x280">Gelang Pasien Panjang (25 × 280 mm)</option>
                         <option value="custom">Kustom (Tentukan Sendiri)</option>
                     </select>
                 </div>
@@ -915,13 +922,22 @@
                 div.className = 'canvas-el' + (selectedElIndex === idx ? ' selected' : '');
                 div.style.top = (el.y_mm * MM_TO_PX) + 'px';
 
-                if (el.type === 'text') {
+                if (el.type === 'box' || el.type === 'rect') {
+                    const boxW = el.width_mm || 40;
+                    const boxH = el.height_mm || 10;
+                    div.style.left = (el.x_mm * MM_TO_PX) + 'px';
+                    div.style.width = (boxW * MM_TO_PX) + 'px';
+                    div.style.height = (boxH * MM_TO_PX) + 'px';
+                    div.style.background = el.bg_color || '#0284c7';
+                    if (el.style === 'rounded') div.style.borderRadius = '9999px';
+                } else if (el.type === 'text') {
                     div.style.fontSize = (el.font_size || 9) + 'pt';
                     div.style.fontFamily = el.font_family || 'Arial';
                     div.style.fontWeight = el.font_weight || 'normal';
                     div.style.textAlign = el.align || 'left';
                     div.style.whiteSpace = 'pre-wrap';
                     div.style.lineHeight = '1.25';
+                    if (el.color) div.style.color = el.color;
                     div.innerText = interpolate(el.content);
 
                     if (el.align === 'center') {
@@ -966,7 +982,8 @@
                     div.style.width = (lineW * MM_TO_PX) + 'px';
                     div.style.height = '2px';
                     const th = (el.thickness_mm || 0.35) * 2;
-                    div.style.borderTop = `${th}px ${el.style || 'solid'} #334155`;
+                    const col = el.color || '#334155';
+                    div.style.borderTop = `${th}px ${el.style || 'solid'} ${col}`;
                 }
 
                 div.onmousedown = (e) => {
@@ -1027,16 +1044,18 @@
                 id: 'el_' + Date.now(),
                 type: type,
                 x_mm: 4.0,
-                y_mm: 5.0 + (currentTemplate.elements.length * 4),
-                content: type === 'text' ? 'Teks Baru' : '{{.barcode}}',
+                y_mm: 5.0 + (currentTemplate.elements.length * 3),
+                content: type === 'text' ? 'Teks Baru' : (type === 'barcode' ? '{{.barcode}}' : ''),
                 font_family: 'Arial',
                 font_size: 9.0,
                 font_weight: 'normal',
                 align: 'left',
-                width_mm: type === 'barcode' ? 46.0 : (type === 'line' ? 72.0 : 0.0),
-                height_mm: type === 'barcode' ? 8.0 : 0.0,
-                thickness_mm: 0.4,
-                style: 'solid'
+                width_mm: type === 'barcode' ? 36.0 : (type === 'line' ? 72.0 : (type === 'box' ? 50.0 : 0.0)),
+                height_mm: type === 'barcode' ? 10.0 : (type === 'box' ? 12.0 : 0.0),
+                thickness_mm: 0.35,
+                style: 'solid',
+                color: '#000000',
+                bg_color: '#0284c7'
             };
             currentTemplate.elements.push(newEl);
             selectedElIndex = currentTemplate.elements.length - 1;
@@ -1071,6 +1090,31 @@
                         <input type="number" step="0.5" value="${el.y_mm}" oninput="updateProp('y_mm', parseFloat(this.value))">
                     </div>
                 </div>
+                ${(el.type === 'box' || el.type === 'rect') ? `
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Lebar Box (mm):</label>
+                            <input type="number" step="1" value="${el.width_mm || 50}" oninput="updateProp('width_mm', parseFloat(this.value))">
+                        </div>
+                        <div class="prop-group">
+                            <label>Tinggi Box (mm):</label>
+                            <input type="number" step="1" value="${el.height_mm || 12}" oninput="updateProp('height_mm', parseFloat(this.value))">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Warna Latar (Background):</label>
+                            <input type="color" value="${el.bg_color || '#0284c7'}" onchange="updateProp('bg_color', this.value)">
+                        </div>
+                        <div class="prop-group">
+                            <label>Bentuk:</label>
+                            <select onchange="updateProp('style', this.value)">
+                                <option value="square" ${el.style !== 'rounded' ? 'selected' : ''}>Persegi (Square)</option>
+                                <option value="rounded" ${el.style === 'rounded' ? 'selected' : ''}>Pill / Sudut Bulat (Rounded)</option>
+                            </select>
+                        </div>
+                    </div>
+                ` : ''}
                 ${el.type === 'text' ? `
                     <div class="prop-group">
                         <label>Isi Teks / Variabel (multi-baris \n didukung):</label>
@@ -1107,6 +1151,20 @@
                             </select>
                         </div>
                     </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Warna Teks:</label>
+                            <input type="color" value="${el.color || '#000000'}" onchange="updateProp('color', this.value)">
+                        </div>
+                        <div class="prop-group">
+                            <label>Warna Cepat:</label>
+                            <div style="display: flex; gap: 4px; margin-top: 4px;">
+                                <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="updateProp('color', '#000000')">Hitam</button>
+                                <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="updateProp('color', '#ffffff')">Putih</button>
+                                <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="updateProp('color', '#0284c7')">Biru</button>
+                            </div>
+                        </div>
+                    </div>
                     <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 4px;" onclick="centerElementOnPaper()">↔ Pusatkan Teks ke Kertas</button>
                 ` : ''}
                 ${el.type === 'line' ? `
@@ -1135,6 +1193,10 @@
                                 <option value="center" ${el.align === 'center' ? 'selected' : ''}>Rata Tengah Kertas</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="prop-group">
+                        <label>Warna Garis:</label>
+                        <input type="color" value="${el.color || '#334155'}" onchange="updateProp('color', this.value)">
                     </div>
                     <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 4px;" onclick="centerElementOnPaper()">↔ Pusatkan Garis ke Tengah Kertas</button>
                 ` : ''}

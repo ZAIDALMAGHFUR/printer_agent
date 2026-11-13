@@ -33,6 +33,10 @@ type VisualElement struct {
 	Thickness float64 `json:"thickness_mm,omitempty"` // Ketebalan garis dalam mm (default 0.3)
 	Style     string  `json:"style,omitempty"`        // "solid", "dashed"
 
+	// Properti Warna
+	Color   string `json:"color,omitempty"`    // Warna teks / garis (Hex, cth: "#ffffff", "#0284c7")
+	BgColor string `json:"bg_color,omitempty"` // Warna latar box (Hex, cth: "#0284c7", "#f97316")
+
 	// Properti Gambar
 	Src string `json:"src,omitempty"` // Base64 data atau URL gambar
 }

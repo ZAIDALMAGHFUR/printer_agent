@@ -176,6 +176,22 @@ func (tm *TemplateManager) DeleteTemplate(id string) error {
 	return nil
 }
 
+func parseHexColor(hex string) (float64, float64, float64) {
+	hex = strings.TrimPrefix(hex, "#")
+	if len(hex) == 6 {
+		var r, g, b uint8
+		if _, err := fmt.Sscanf(hex, "%02x%02x%02x", &r, &g, &b); err == nil {
+			return float64(r) / 255.0, float64(g) / 255.0, float64(b) / 255.0
+		}
+	} else if len(hex) == 3 {
+		var r, g, b uint8
+		if _, err := fmt.Sscanf(hex, "%1x%1x%1x", &r, &g, &b); err == nil {
+			return float64(r*17) / 255.0, float64(g*17) / 255.0, float64(b*17) / 255.0
+		}
+	}
+	return 0, 0, 0
+}
+
 // RenderToPDF mengonversi template dan data masukan menjadi file PDF fisik dengan dimensi mm akurat
 func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[string]interface{}, saveDir string, jobID string) (string, error) {
 	if tmpl == nil {
@@ -229,6 +245,23 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 		yPt := heightPt - (el.Y * mm2pt)
 
 		switch el.Type {
+		case "box", "rect":
+			boxW := el.Width * mm2pt
+			if boxW <= 0 {
+				boxW = widthPt - (2 * xPt)
+			}
+			boxH := el.Height * mm2pt
+			if boxH <= 0 {
+				boxH = 10.0
+			}
+			if el.BgColor != "" {
+				r, g, b := parseHexColor(el.BgColor)
+				contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f rg\n", r, g, b))
+			} else {
+				contentStream.WriteString("0.9 0.9 0.9 rg\n")
+			}
+			contentStream.WriteString(fmt.Sprintf("%.2f %.2f %.2f %.2f re\nf\n", xPt, yPt-boxH, boxW, boxH))
+
 		case "text":
 			textVal := interpolate(el.Content)
 			if textVal == "" {
@@ -256,6 +289,13 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 				} else {
 					fontTag = "F3"
 				}
+			}
+
+			if el.Color != "" {
+				r, g, b := parseHexColor(el.Color)
+				contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f rg\n", r, g, b))
+			} else {
+				contentStream.WriteString("0 0 0 rg\n")
 			}
 
 			lines := strings.Split(textVal, "\n")
@@ -308,6 +348,13 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 			startX := xPt
 			if el.Align == "center" {
 				startX = (widthPt - lineWidthPt) / 2
+			}
+
+			if el.Color != "" {
+				r, g, b := parseHexColor(el.Color)
+				contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f RG\n", r, g, b))
+			} else {
+				contentStream.WriteString("0 0 0 RG\n")
 			}
 
 			contentStream.WriteString(fmt.Sprintf("%.2f w\n", thicknessPt))

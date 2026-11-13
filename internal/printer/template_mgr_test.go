@@ -125,4 +125,21 @@ func TestDynamicTemplateManager(t *testing.T) {
 		t.Fatalf("File PDF gelang_pasien_laki tidak valid: %v", err)
 	}
 	t.Logf("Berhasil render PDF gelang_pasien_laki: %s (%d bytes)", gelangLakiPDF, fi6.Size())
+
+	// 7. Test Kartu Pasien (86x54mm CR80)
+	kartuTmpl, found := actualTM.GetTemplate("kartu_pasien")
+	if !found {
+		t.Fatalf("Template 'kartu_pasien' harusnya ditemukan di folder templates")
+	}
+
+	kartuPDF, err := actualTM.RenderToPDF(kartuTmpl, kartuTmpl.SampleData, saveDir, "TEST-KARTU")
+	if err != nil {
+		t.Fatalf("Gagal render kartu_pasien ke PDF: %v", err)
+	}
+
+	fi7, err := os.Stat(kartuPDF)
+	if err != nil || fi7.Size() == 0 {
+		t.Fatalf("File PDF kartu_pasien tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF kartu_pasien: %s (%d bytes)", kartuPDF, fi7.Size())
 }
