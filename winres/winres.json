@@ -1,0 +1,60 @@
+{
+  "RT_GROUP_ICON": {
+    "APP": {
+      "0000": [
+        "icon.png",
+        "icon16.png"
+      ]
+    }
+  },
+  "RT_MANIFEST": {
+    "#1": {
+      "0409": {
+        "identity": {
+          "name": "SIMRS.Developer.SmartPrintAgent",
+          "version": "1.2.0.0"
+        },
+        "description": "Smart Hospital Print Agent - Universal Printing & Designer",
+        "minimum-os": "win7",
+        "execution-level": "as invoker",
+        "ui-access": false,
+        "auto-elevate": false,
+        "dpi-awareness": "system",
+        "disable-theming": false,
+        "disable-window-filtering": false,
+        "high-resolution-scrolling-aware": true,
+        "ultra-high-resolution-scrolling-aware": true,
+        "long-path-aware": true,
+        "printer-driver-isolation": true,
+        "gdi-scaling": false,
+        "segment-heap": false,
+        "use-common-controls-v6": true
+      }
+    }
+  },
+  "RT_VERSION": {
+    "#1": {
+      "0000": {
+        "fixed": {
+          "file_version": "1.2.0.0",
+          "product_version": "1.2.0.0"
+        },
+        "info": {
+          "0409": {
+            "Comments": "Smart Print Agent for Hospital Information System (SIMRS)",
+            "CompanyName": "SIMRS Developer Team",
+            "Publisher": "SIMRS Developer Team",
+            "FileDescription": "Smart Hospital Print Agent",
+            "FileVersion": "1.2.0.0",
+            "InternalName": "smart-print-agent",
+            "LegalCopyright": "Copyright © 2026 SIMRS Developer Team. All rights reserved.",
+            "LegalTrademarks": "SIMRS Developer Team",
+            "OriginalFilename": "smart-print-agent.exe",
+            "ProductName": "Smart Print Agent",
+            "ProductVersion": "1.2.0.0"
+          }
+        }
+      }
+    }
+  }
+}

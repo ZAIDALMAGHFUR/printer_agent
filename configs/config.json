@@ -1,6 +1,7 @@
 {
   "server_port": 1237,
   "hospital_name": "RSU ASHAVIN",
+  "publisher": "SIMRS Developer Team",
   "auto_save_pdf": true,
   "pdf_save_dir": "C:\\SIMRS_PDF",
   "queue_worker_count": 4,

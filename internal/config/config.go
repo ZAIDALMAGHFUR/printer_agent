@@ -13,6 +13,7 @@ import (
 type AppConfig struct {
 	ServerPort       int                             `json:"server_port"`        // Default: 1237
 	HospitalName     string                          `json:"hospital_name"`      // Nama RS
+	Publisher        string                          `json:"publisher"`          // Publisher / Pengembang
 	AutoSavePDF      bool                            `json:"auto_save_pdf"`      // Jika printer mati/belum ada, auto save PDF
 	PDFSaveDir       string                          `json:"pdf_save_dir"`       // Lokasi penyimpanan PDF (cth: C:\SIMRS_PDF)
 	QueueWorkerCount int                             `json:"queue_worker_count"` // Jumlah worker goroutine paralel
@@ -81,6 +82,7 @@ func defaultConfiguration() *AppConfig {
 	return &AppConfig{
 		ServerPort:       1237,
 		HospitalName:     "RSU ASHAVIN",
+		Publisher:        "SIMRS Developer Team",
 		AutoSavePDF:      true,
 		PDFSaveDir:       "C:\\SIMRS_PDF",
 		QueueWorkerCount: 4,
