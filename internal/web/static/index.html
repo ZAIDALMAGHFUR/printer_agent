@@ -19,8 +19,8 @@
             --border: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); padding: 20px; }
-        .container { max-width: 1240px; margin: 0 auto; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 16px 24px; min-height: 100vh; }
+        .container { width: 100%; max-width: 100%; margin: 0 auto; }
         
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
@@ -63,7 +63,7 @@
         .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
 
         /* Template Gallery Grid */
-        .template-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 10px; }
+        .template-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin-top: 10px; }
         .template-card { background: #ffffff; border: 2px solid var(--border); border-radius: 10px; padding: 14px 16px; transition: all 0.2s; cursor: pointer; position: relative; }
         .template-card:hover { border-color: var(--primary); box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12); transform: translateY(-2px); }
         .template-card.active { border-color: var(--primary); background: #f0f9ff; box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25); }
@@ -76,8 +76,8 @@
         .template-card-actions { display: flex; gap: 6px; }
 
         /* Designer Specific */
-        .designer-layout { display: grid; grid-template-columns: 290px 1fr 310px; gap: 16px; }
-        .canvas-container { background: #cbd5e1; border-radius: 8px; padding: 32px 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 520px; max-height: 750px; overflow: auto; position: relative; user-select: none; }
+        .designer-layout { display: grid; grid-template-columns: 310px 1fr 340px; gap: 18px; }
+        .canvas-container { background: #cbd5e1; border-radius: 10px; padding: 36px 24px; display: flex; justify-content: center; align-items: flex-start; min-height: 560px; max-height: calc(100vh - 200px); overflow: auto; position: relative; user-select: none; }
         
         /* Canvas Paper & Resize Handles */
         .canvas-paper-wrapper { position: relative; display: inline-block; margin: 18px auto; }
@@ -375,7 +375,10 @@
                     <p>Universal Printing • Interactive Drag Designer • GitHub Auto-Sync (v1.2.0)</p>
                 </div>
             </div>
-            <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn btn-outline btn-sm" id="btnFullscreen" onclick="toggleFullscreen()" style="padding: 7px 13px; font-size: 13px; gap: 6px;" title="Mode Layar Penuh">
+                    ⛶ Layar Penuh
+                </button>
                 <span class="badge">
                     <span class="badge-dot"></span>
                     <span id="agentStatus">ONLINE - Port 1237</span>
@@ -1056,6 +1059,41 @@
         let currentTemplate = null;
         let selectedElIndex = -1;
         const MM_TO_PX = 7.0; // Faktor skala kanvas visual (1 mm = 7 px)
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                const docEl = document.documentElement;
+                if (docEl.requestFullscreen) {
+                    docEl.requestFullscreen();
+                } else if (docEl.webkitRequestFullscreen) {
+                    docEl.webkitRequestFullscreen();
+                } else if (docEl.msRequestFullscreen) {
+                    docEl.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('btnFullscreen');
+            if (!btn) return;
+            if (document.fullscreenElement) {
+                btn.innerHTML = '🗗 Keluar Layar Penuh';
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-outline');
+            } else {
+                btn.innerHTML = '⛶ Layar Penuh';
+                btn.classList.add('btn-outline');
+                btn.classList.remove('btn-primary');
+            }
+        });
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
