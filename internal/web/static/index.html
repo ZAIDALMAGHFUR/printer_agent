@@ -410,6 +410,24 @@
             </div>
         </div>
 
+        <!-- Modal Konfirmasi Hapus Template (In-App Modern) -->
+        <div id="deleteConfirmModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+            <div style="background: #ffffff; border-radius: 14px; width: 420px; max-width: 90%; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25), 0 8px 10px -6px rgba(0,0,0,0.15); border: 1px solid var(--border); text-align: center;">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 14px auto;">
+                    🗑️
+                </div>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Hapus Template Ini?</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
+                    Apakah Anda yakin ingin menghapus template <br><strong id="deleteTmplName" style="color: var(--text-main); font-size: 14px;">-</strong> (<code id="deleteTmplId">-</code>)?<br>
+                    <span style="font-size: 12px; color: #ef4444; font-weight: 500;">Tindakan ini permanen dan file template akan dihapus dari sistem.</span>
+                </p>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button class="btn btn-outline" style="min-width: 100px; padding: 9px 18px;" onclick="closeDeleteModal()">Batal</button>
+                    <button class="btn btn-danger" style="min-width: 120px; padding: 9px 18px;" onclick="executeDeleteTemplate()">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+
         <div id="toast">Notifikasi</div>
     </div>
 
@@ -677,10 +695,27 @@
             if (sel && sel.value !== id) sel.value = id;
         }
 
-        async function deleteTemplateConfirm(id, name) {
-            if (!confirm(`Apakah Anda yakin ingin menghapus template "${name}" (${id})?`)) {
-                return;
-            }
+        let pendingDeleteId = null;
+
+        function deleteTemplateConfirm(id, name) {
+            pendingDeleteId = id;
+            document.getElementById('deleteTmplName').innerText = name || id;
+            document.getElementById('deleteTmplId').innerText = id;
+            const modal = document.getElementById('deleteConfirmModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteId = null;
+            const modal = document.getElementById('deleteConfirmModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function executeDeleteTemplate() {
+            if (!pendingDeleteId) return;
+            const id = pendingDeleteId;
+            closeDeleteModal();
+            showToast("Menghapus template " + id + "...");
             try {
                 const res = await fetch('/printgo/templates?id=' + encodeURIComponent(id), { method: 'DELETE' });
                 const data = await res.json();
@@ -1258,8 +1293,13 @@
         async function submitNewTemplate() {
             const rawName = document.getElementById('modalTmplName').value;
             if (!rawName || !rawName.trim()) {
-                alert("Silahkan masukkan nama template terlebih dahulu!");
-                document.getElementById('modalTmplName').focus();
+                showToast("Silahkan masukkan nama template terlebih dahulu!");
+                const inp = document.getElementById('modalTmplName');
+                if (inp) {
+                    inp.focus();
+                    inp.style.borderColor = '#ef4444';
+                    setTimeout(() => { inp.style.borderColor = ''; }, 2000);
+                }
                 return;
             }
 
