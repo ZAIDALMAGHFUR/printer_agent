@@ -99,8 +99,8 @@ func BuildESCPOS(lines []model.PrintLine, autoCut bool, openDrawer bool) ([]byte
 			buf.Write(cmdBoldOff)
 
 		case "cut":
-			// Perintah potong kertas di tengah konten
-			buf.Write([]byte("\n\n\n\n"))
+			// Perintah potong kertas di tengah konten (feed 5-6 baris agar teks melewati pisau pemotong)
+			buf.Write([]byte("\n\n\n\n\n\n"))
 			buf.Write(cmdCutFull)
 			hasCut = true
 
@@ -191,8 +191,9 @@ func BuildESCPOS(lines []model.PrintLine, autoCut bool, openDrawer bool) ([]byte
 	}
 
 	// 4. Feed & Potong Kertas di akhir jika belum dipotong
+	// Berikan feed 6 baris agar seluruh teks bagian bawah sudah keluar sempurna melewati pisau pemotong
 	if autoCut && !hasCut {
-		buf.Write([]byte("\n\n\n\n"))
+		buf.Write([]byte("\n\n\n\n\n\n"))
 		buf.Write(cmdCutFull)
 	}
 
