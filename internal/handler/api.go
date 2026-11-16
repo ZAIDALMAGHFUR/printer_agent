@@ -234,14 +234,18 @@ func (h *APIHandler) HandleTestPrint(w http.ResponseWriter, r *http.Request) {
 	req.RequestID = fmt.Sprintf("TEST-%d", time.Now().Unix()%10000)
 	req.PrinterTarget = target
 
-	if strings.ToLower(mapping.DriverType) == "tspl" {
+	if strings.ToLower(mapping.DriverType) == "tspl" || strings.HasPrefix(strings.ToLower(mapping.DriverType), "tspl") {
 		// Test Label Barcode
 		req.DocumentType = "test_barcode"
+		barcodeHeight := 45
+		if printer.IsTwoColumnPaper(mapping.PaperSize) {
+			barcodeHeight = 35
+		}
 		req.Konten = []model.PrintLine{
 			{Text: cfg.HospitalName, Bold: true, Size: "medium"},
 			{Text: "TEST CETAK BARCODE", Size: "normal"},
 			{Type: "divider"},
-			{Type: "barcode", Text: "TEST-123456", Height: 45},
+			{Type: "barcode", Text: "TEST-123456", Height: barcodeHeight},
 			{Text: time.Now().Format("2006-01-02 15:04:05"), Size: "small"},
 		}
 	} else {

@@ -310,162 +310,185 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 		return res
 	}
 
+	// Multi-column setup (untuk stiker 2 kolom kanan-kiri)
+	colCount := 1
+	colOffsetPt := 0.0
+	singleColWidthPt := widthPt
+	if tmpl.Paper.Columns >= 2 {
+		colCount = tmpl.Paper.Columns
+		labelW := tmpl.Paper.LabelWidthMM
+		if labelW <= 0 {
+			labelW = (tmpl.Paper.WidthMM - float64(colCount-1)*tmpl.Paper.ColumnGapMM) / float64(colCount)
+		}
+		singleColWidthPt = labelW * mm2pt
+		gapMM := tmpl.Paper.ColumnGapMM
+		if gapMM <= 0 {
+			gapMM = 2.5
+		}
+		colOffsetPt = (labelW + gapMM) * mm2pt
+
+		// Gambar garis penanda gap antar stiker pada PDF Preview
+		gapCenterPt := (labelW + (gapMM / 2.0)) * mm2pt
+		contentStream.WriteString("0.75 0.75 0.75 RG\n0.4 w\n[2 2] 0 d\n")
+		contentStream.WriteString(fmt.Sprintf("%.2f 0 m\n%.2f %.2f l\nS\n[] 0 d\n", gapCenterPt, gapCenterPt, heightPt))
+	}
+
 	// Render setiap elemen visual
 	for _, el := range tmpl.Elements {
-		xPt := el.X * mm2pt
-		// PDF Y dihitung dari bawah ke atas
-		yPt := heightPt - (el.Y * mm2pt)
+		for col := 0; col < colCount; col++ {
+			colShiftPt := float64(col) * colOffsetPt
+			xPt := (el.X * mm2pt) + colShiftPt
+			// PDF Y dihitung dari bawah ke atas
+			yPt := heightPt - (el.Y * mm2pt)
 
-		switch el.Type {
-		case "box", "rect":
-			boxW := el.Width * mm2pt
-			if boxW <= 0 {
-				boxW = widthPt - (2 * xPt)
-			}
-			boxH := el.Height * mm2pt
-			if boxH <= 0 {
-				boxH = 10.0
-			}
-			if el.BgColor != "" {
-				r, g, b := parseHexColor(el.BgColor)
-				contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f rg\n", r, g, b))
-			} else {
-				contentStream.WriteString("0.9 0.9 0.9 rg\n")
-			}
-			contentStream.WriteString(fmt.Sprintf("%.2f %.2f %.2f %.2f re\nf\n", xPt, yPt-boxH, boxW, boxH))
-
-		case "text":
-			textVal := interpolate(el.Content)
-			if textVal == "" {
-				continue
-			}
-			fontSize := el.FontSize
-			if fontSize <= 0 {
-				fontSize = 9.0
-			}
-
-			isBold := strings.EqualFold(el.FontWeight, "bold")
-			fontTag := "F1" // Times-Roman
-			if isBold {
-				fontTag = "F1B"
-			}
-			if strings.EqualFold(el.FontFamily, "arial") || strings.EqualFold(el.FontFamily, "helvetica") {
-				if isBold {
-					fontTag = "F2B"
-				} else {
-					fontTag = "F2"
+			switch el.Type {
+			case "box", "rect":
+				boxW := el.Width * mm2pt
+				if boxW <= 0 {
+					boxW = singleColWidthPt - (2 * (el.X * mm2pt))
 				}
-			} else if strings.EqualFold(el.FontFamily, "courier") {
-				if isBold {
-					fontTag = "F3B"
-				} else {
-					fontTag = "F3"
+				boxH := el.Height * mm2pt
+				if boxH <= 0 {
+					boxH = 10.0
 				}
-			}
+				if el.BgColor != "" {
+					r, g, b := parseHexColor(el.BgColor)
+					contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f rg\n", r, g, b))
+				} else {
+					contentStream.WriteString("0.9 0.9 0.9 rg\n")
+				}
+				contentStream.WriteString(fmt.Sprintf("%.2f %.2f %.2f %.2f re\nf\n", xPt, yPt-boxH, boxW, boxH))
 
-			if el.Color != "" {
-				r, g, b := parseHexColor(el.Color)
-				contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f rg\n", r, g, b))
-			} else {
-				contentStream.WriteString("0 0 0 rg\n")
-			}
-
-			lines := strings.Split(textVal, "\n")
-			lineHeightPt := fontSize * 1.25
-			for lineIdx, lineStr := range lines {
-				if lineStr == "" {
+			case "text":
+				textVal := interpolate(el.Content)
+				if textVal == "" {
 					continue
 				}
-				curY := yPt - (float64(lineIdx) * lineHeightPt)
-				safeText := strings.ReplaceAll(lineStr, "\\", "\\\\")
-				safeText = strings.ReplaceAll(safeText, "(", "\\(")
-				safeText = strings.ReplaceAll(safeText, ")", "\\)")
+				fontSize := el.FontSize
+				if fontSize <= 0 {
+					fontSize = 9.0
+				}
 
-				estWidth := float64(len(lineStr)) * fontSize * 0.52
-				renderX := xPt
-				if el.Align == "center" {
-					if el.Width > 0 {
-						renderX = xPt + ((el.Width * mm2pt) - estWidth)/2
+				isBold := strings.EqualFold(el.FontWeight, "bold")
+				fontTag := "F1" // Times-Roman
+				if isBold {
+					fontTag = "F1B"
+				}
+				if strings.EqualFold(el.FontFamily, "arial") || strings.EqualFold(el.FontFamily, "helvetica") {
+					if isBold {
+						fontTag = "F2B"
 					} else {
-						renderX = (widthPt - estWidth) / 2
+						fontTag = "F2"
 					}
-					if renderX < 2 {
-						renderX = 2
-					}
-				} else if el.Align == "right" {
-					if el.Width > 0 {
-						renderX = xPt + (el.Width * mm2pt) - estWidth
+				} else if strings.EqualFold(el.FontFamily, "courier") {
+					if isBold {
+						fontTag = "F3B"
 					} else {
-						renderX = widthPt - xPt - estWidth
+						fontTag = "F3"
 					}
 				}
 
-				contentStream.WriteString("BT\n")
-				contentStream.WriteString(fmt.Sprintf("/%s %.2f Tf\n", fontTag, fontSize))
-				contentStream.WriteString(fmt.Sprintf("%.2f %.2f Td\n", renderX, curY))
-				contentStream.WriteString(fmt.Sprintf("(%s) Tj\n", safeText))
-				contentStream.WriteString("ET\n")
-			}
+				if el.Color != "" {
+					r, g, b := parseHexColor(el.Color)
+					contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f rg\n", r, g, b))
+				} else {
+					contentStream.WriteString("0 0 0 rg\n")
+				}
 
-		case "line", "divider":
-			lineWidthPt := el.Width * mm2pt
-			if lineWidthPt <= 0 {
-				lineWidthPt = widthPt - (2 * xPt)
-			}
-			thicknessPt := el.Thickness * mm2pt
-			if thicknessPt <= 0 {
-				thicknessPt = 0.4
-			}
+				lines := strings.Split(textVal, "\n")
+				lineHeightPt := fontSize * 1.25
+				for lineIdx, lineStr := range lines {
+					if lineStr == "" {
+						continue
+					}
+					curY := yPt - (float64(lineIdx) * lineHeightPt)
+					safeText := strings.ReplaceAll(lineStr, "\\", "\\\\")
+					safeText = strings.ReplaceAll(safeText, "(", "\\(")
+					safeText = strings.ReplaceAll(safeText, ")", "\\)")
 
-			startX := xPt
-			if el.Align == "center" {
-				startX = (widthPt - lineWidthPt) / 2
-			}
+					estWidth := float64(len(lineStr)) * fontSize * 0.52
+					renderX := xPt
+					if el.Align == "center" {
+						if el.Width > 0 {
+							renderX = xPt + ((el.Width * mm2pt) - estWidth)/2
+						} else {
+							renderX = xPt + (singleColWidthPt - estWidth)/2
+						}
+					} else if el.Align == "right" {
+						if el.Width > 0 {
+							renderX = xPt + (el.Width * mm2pt) - estWidth
+						} else {
+							renderX = xPt + singleColWidthPt - estWidth
+						}
+					}
 
-			if el.Color != "" {
-				r, g, b := parseHexColor(el.Color)
-				contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f RG\n", r, g, b))
-			} else {
-				contentStream.WriteString("0 0 0 RG\n")
-			}
+					contentStream.WriteString("BT\n")
+					contentStream.WriteString(fmt.Sprintf("/%s %.2f Tf\n", fontTag, fontSize))
+					contentStream.WriteString(fmt.Sprintf("%.2f %.2f Td\n", renderX, curY))
+					contentStream.WriteString(fmt.Sprintf("(%s) Tj\n", safeText))
+					contentStream.WriteString("ET\n")
+				}
 
-			contentStream.WriteString(fmt.Sprintf("%.2f w\n", thicknessPt))
-			if el.Style == "dashed" {
-				contentStream.WriteString("[3 3] 0 d\n")
-			} else {
-				contentStream.WriteString("[] 0 d\n")
-			}
-			contentStream.WriteString(fmt.Sprintf("%.2f %.2f m\n", startX, yPt))
-			contentStream.WriteString(fmt.Sprintf("%.2f %.2f l\nS\n", startX+lineWidthPt, yPt))
+			case "line", "divider":
+				lineWidthPt := el.Width * mm2pt
+				if lineWidthPt <= 0 {
+					lineWidthPt = singleColWidthPt - (2 * (el.X * mm2pt))
+				}
+				thicknessPt := el.Thickness * mm2pt
+				if thicknessPt <= 0 {
+					thicknessPt = 0.4
+				}
 
-		case "barcode":
-			barcodeVal := interpolate(el.Content)
-			if barcodeVal == "" {
-				continue
-			}
-			bcHeightPt := el.Height * mm2pt
-			if bcHeightPt <= 0 {
-				bcHeightPt = 20.0
-			}
-			bcWidthPt := el.Width * mm2pt
-			if bcWidthPt <= 0 {
-				bcWidthPt = widthPt - (2 * xPt)
-			}
+				startX := xPt
+				if el.Align == "center" {
+					startX = xPt + (singleColWidthPt - lineWidthPt)/2
+				}
 
-			startX := xPt
-			if el.Align == "center" {
-				startX = (widthPt - bcWidthPt) / 2
-			}
+				if el.Color != "" {
+					r, g, b := parseHexColor(el.Color)
+					contentStream.WriteString(fmt.Sprintf("%.3f %.3f %.3f RG\n", r, g, b))
+				} else {
+					contentStream.WriteString("0 0 0 RG\n")
+				}
 
-			bits := EncodeCode128B(barcodeVal)
-			if len(bits) > 0 {
-				moduleWidth := bcWidthPt / float64(len(bits))
-				contentStream.WriteString("0 0 0 rg\n")
-				for i, isBar := range bits {
-					if isBar {
-						bx := startX + (float64(i) * moduleWidth)
-						by := yPt - bcHeightPt
-						contentStream.WriteString(fmt.Sprintf("%.2f %.2f %.2f %.2f re\nf\n", bx, by, moduleWidth, bcHeightPt))
+				contentStream.WriteString(fmt.Sprintf("%.2f w\n", thicknessPt))
+				if el.Style == "dashed" {
+					contentStream.WriteString("[3 3] 0 d\n")
+				} else {
+					contentStream.WriteString("[] 0 d\n")
+				}
+				contentStream.WriteString(fmt.Sprintf("%.2f %.2f m\n", startX, yPt))
+				contentStream.WriteString(fmt.Sprintf("%.2f %.2f l\nS\n", startX+lineWidthPt, yPt))
+
+			case "barcode":
+				barcodeVal := interpolate(el.Content)
+				if barcodeVal == "" {
+					continue
+				}
+				bcHeightPt := el.Height * mm2pt
+				if bcHeightPt <= 0 {
+					bcHeightPt = 20.0
+				}
+				bcWidthPt := el.Width * mm2pt
+				if bcWidthPt <= 0 {
+					bcWidthPt = singleColWidthPt - (2 * (el.X * mm2pt))
+				}
+
+				startX := xPt
+				if el.Align == "center" {
+					startX = xPt + (singleColWidthPt - bcWidthPt)/2
+				}
+
+				bits := EncodeCode128B(barcodeVal)
+				if len(bits) > 0 {
+					moduleWidth := bcWidthPt / float64(len(bits))
+					contentStream.WriteString("0 0 0 rg\n")
+					for i, isBar := range bits {
+						if isBar {
+							bx := startX + (float64(i) * moduleWidth)
+							by := yPt - bcHeightPt
+							contentStream.WriteString(fmt.Sprintf("%.2f %.2f %.2f %.2f re\nf\n", bx, by, moduleWidth, bcHeightPt))
+						}
 					}
 				}
 			}

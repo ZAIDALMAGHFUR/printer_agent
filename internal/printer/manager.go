@@ -38,7 +38,8 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 			if err == nil {
 				generatedPDFPath = pdfPath
 			}
-		} else if len(req.Konten) == 0 {
+		}
+		if len(req.Konten) == 0 {
 			req.Konten = ApplyTemplate(req.Template, req.Data)
 		}
 	}
@@ -307,6 +308,12 @@ func (m *Manager) buildRawBytes(req model.PrintRequest, mapping model.PrinterMap
 
 	switch driver {
 	case "tspl":
+		// Jika ada template dinamis JSON, render langsung ke TSPL dengan posisi presisi & multi-kolom
+		if req.Template != "" {
+			if tmpl, ok := GetTemplateManager().GetTemplate(req.Template); ok {
+				return BuildTSPLFromTemplate(tmpl, req.Data, copies)
+			}
+		}
 		// Driver TSC Barcode
 		return BuildTSPL(req.Konten, mapping.PaperSize, copies)
 	default:
@@ -322,8 +329,14 @@ func (m *Manager) buildRawBytes(req model.PrintRequest, mapping model.PrinterMap
 // DetectDriver mendeteksi driver printer secara cerdas tanpa membebani user
 func DetectDriver(targetName string, printerName string, configured string) string {
 	c := strings.ToLower(configured)
-	if c == "tspl" || c == "escpos" || c == "generic" {
-		return c
+	if c == "tspl" || strings.HasPrefix(c, "tspl") {
+		return "tspl"
+	}
+	if c == "escpos" || strings.HasPrefix(c, "escpos") {
+		return "escpos"
+	}
+	if c == "generic" {
+		return "generic"
 	}
 
 	p := strings.ToLower(printerName)

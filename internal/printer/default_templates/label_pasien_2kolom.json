@@ -1,0 +1,95 @@
+{
+  "id": "label_pasien_2kolom",
+  "name": "Label Pasien 2 Kolom (Kanan-Kiri 2x 35x20mm)",
+  "category": "label",
+  "description": "Label stiker barcode identitas pasien 2 kolom kanan-kiri (Roll 75x20mm)",
+  "version": "1.0.0",
+  "updated_at": "2026-11-16T19:30:00Z",
+  "paper": {
+    "width_mm": 75.0,
+    "height_mm": 20.0,
+    "orientation": "portrait",
+    "margin_top": 1.0,
+    "margin_left": 1.5,
+    "columns": 2,
+    "column_gap_mm": 2.5,
+    "label_width_mm": 35.0
+  },
+  "elements": [
+    {
+      "id": "el_nama",
+      "type": "text",
+      "x_mm": 1.5,
+      "y_mm": 2.2,
+      "content": "{{.nama}}",
+      "font_family": "Times New Roman",
+      "font_size": 9.0,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_mr",
+      "type": "text",
+      "x_mm": 1.5,
+      "y_mm": 5.4,
+      "content": "No. MR : {{.no_mr}} - {{.tgl_lahir}}",
+      "font_family": "Times New Roman",
+      "font_size": 7.5,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_umur",
+      "type": "text",
+      "x_mm": 1.5,
+      "y_mm": 8.3,
+      "content": "Umur : {{.umur}} ({{.jk}})",
+      "font_family": "Times New Roman",
+      "font_size": 7.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_barcode",
+      "type": "barcode",
+      "x_mm": 1.5,
+      "y_mm": 10.5,
+      "width_mm": 31.0,
+      "height_mm": 5.5,
+      "content": "{{.barcode}}",
+      "format": "CODE128"
+    },
+    {
+      "id": "el_barcode_val",
+      "type": "text",
+      "x_mm": 1.5,
+      "y_mm": 18.0,
+      "content": "{{.barcode}}",
+      "font_family": "Times New Roman",
+      "font_size": 7.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_waktu",
+      "type": "text",
+      "x_mm": 17.5,
+      "y_mm": 18.0,
+      "content": "{{.waktu}}",
+      "font_family": "Times New Roman",
+      "font_size": 6.5,
+      "font_weight": "normal",
+      "align": "left"
+    }
+  ],
+  "sample_data": {
+    "nama": "NANI",
+    "no_mr": "00150515",
+    "tgl_lahir": "29/01/1934",
+    "umur": "92 Th",
+    "jk": "P",
+    "alamat": "Jepara",
+    "barcode": "2611000008",
+    "waktu": "2026-11-16 19:15"
+  }
+}

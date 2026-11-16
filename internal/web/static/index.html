@@ -516,8 +516,11 @@
                         <label>Preset Cepat Ukuran:</label>
                         <select id="presetPaperSelect" onchange="applyPaperPreset(this.value)">
                             <option value="custom">✏️ Kustom (Tarik Manual / Ketik)</option>
+                            <option value="75x20_2col">🏷️ Label Pasien 2 Kolom (2x 35x20 mm Kanan-Kiri)</option>
+                            <option value="70x15_2col">🏷️ Label Pasien 2 Kolom (2x 33x15 mm Kanan-Kiri)</option>
+                            <option value="80x25_2col">🏷️ Label Pasien 2 Kolom (2x 38x25 mm Kanan-Kiri)</option>
+                            <option value="50x30">🏷️ Label Pasien 1 Kolom (50 x 30 mm)</option>
                             <option value="86x54">💳 Kartu Pasien (86 x 54 mm CR80)</option>
-                            <option value="50x30">🏷️ Label Pasien (50 x 30 mm)</option>
                             <option value="80x100">📋 Tracer Masuk (80 x 100 mm)</option>
                             <option value="80x115">🎫 Struk Antrian Kiosk (80 x 115 mm)</option>
                             <option value="80x130">🧾 Bukti Pendaftaran / Tracer (80 x 130 mm)</option>
@@ -528,12 +531,25 @@
                     </div>
                     <div class="grid-2">
                         <div class="prop-group">
-                            <label>Lebar (mm):</label>
+                            <label>Lebar Total (mm):</label>
                             <input type="number" id="paperWidth" value="80" step="1" min="15" max="300" oninput="updateCanvasFromInputs()">
                         </div>
                         <div class="prop-group">
                             <label>Tinggi (mm):</label>
                             <input type="number" id="paperHeight" value="130" step="1" min="15" max="600" oninput="updateCanvasFromInputs()">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="prop-group">
+                            <label>Format Kolom:</label>
+                            <select id="paperColumns" onchange="onColumnsChange(this.value)">
+                                <option value="1">1 Kolom (Standar)</option>
+                                <option value="2">2 Kolom (Kanan-Kiri / 2-Up)</option>
+                            </select>
+                        </div>
+                        <div class="prop-group">
+                            <label>Gap Tengah (mm):</label>
+                            <input type="number" id="paperColumnGap" value="2.5" step="0.5" min="0" max="20" oninput="updateCanvasFromInputs()">
                         </div>
                     </div>
                     <div style="background: #f1f5f9; padding: 8px 10px; border-radius: 6px; font-size: 11px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
@@ -658,11 +674,12 @@
                 <div class="prop-group">
                     <label>Preset Format Kertas:</label>
                     <select id="modalTmplPreset" onchange="onModalPresetChange(this.value)">
+                        <option value="75x20_2col">🏷️ Label Pasien 2 Kolom Kanan-Kiri (2x 35x20 mm / Total 75x20 mm)</option>
+                        <option value="50x30">🏷️ Label Pasien / Farmasi 1 Kolom (50 × 30 mm)</option>
                         <option value="86x54">💳 Kartu Pasien ID Card (86 × 54 mm CR80)</option>
                         <option value="80x100">📋 Tracer Masuk (80 × 100 mm)</option>
                         <option value="80x130">🧾 Struk Bukti Pendaftaran (80 × 130 mm)</option>
                         <option value="80x115">🎫 Struk Antrian Kiosk (80 × 115 mm)</option>
-                        <option value="50x30">🏷️ Label Pasien / Farmasi (50 × 30 mm)</option>
                         <option value="100x28">🎗️ Gelang Pasien Thermal (100 × 28 mm)</option>
                         <option value="80x80">🧾 Struk Kasir Standar (80 × 80 mm)</option>
                         <option value="25x280">🎗️ Gelang Pasien Panjang (25 × 280 mm)</option>
@@ -1197,7 +1214,8 @@
                         <select class="row-driver">
                             <option value="auto" ${(!p.driver_type || p.driver_type === 'auto') ? 'selected' : ''}>✨ Universal (Driver Windows)</option>
                             <option value="escpos" ${p.driver_type === 'escpos' ? 'selected' : ''}>🧾 RAW Struk Thermal (ESC/POS 80mm)</option>
-                            <option value="tspl" ${p.driver_type === 'tspl' ? 'selected' : ''}>🏷️ RAW Barcode (TSPL)</option>
+                            <option value="tspl_2col" ${(p.driver_type === 'tspl_2col' || (p.driver_type === 'tspl' && p.paper_size && (p.paper_size.includes('2col') || p.paper_size.includes('75x20')))) ? 'selected' : ''}>🏷️ RAW Barcode 2 Kolom Kanan-Kiri (TSPL 75x20mm)</option>
+                            <option value="tspl" ${(p.driver_type === 'tspl' && (!p.paper_size || (!p.paper_size.includes('2col') && !p.paper_size.includes('75x20')))) ? 'selected' : ''}>🏷️ RAW Barcode 1 Kolom (TSPL 50x30mm)</option>
                             <option value="generic" ${p.driver_type === 'generic' ? 'selected' : ''}>📄 Dokumen A4 / Dot Matrix (Epson LX)</option>
                         </select>
                     </td>
@@ -1303,7 +1321,8 @@
                     <select class="row-driver">
                         <option value="auto" selected>✨ Universal (Driver Windows)</option>
                         <option value="escpos">🧾 RAW Struk Thermal (ESC/POS 80mm)</option>
-                        <option value="tspl">🏷️ RAW Barcode (TSPL)</option>
+                        <option value="tspl_2col">🏷️ RAW Barcode 2 Kolom Kanan-Kiri (TSPL 75x20mm)</option>
+                        <option value="tspl">🏷️ RAW Barcode 1 Kolom (TSPL 50x30mm)</option>
                         <option value="generic">📄 Dokumen A4 / Dot Matrix (Epson LX)</option>
                     </select>
                 </td>
@@ -1331,14 +1350,23 @@
                 const targetVal = targetInput ? targetInput.value.trim() : '';
                 const driver = tr.querySelector('.row-driver').value;
 
+                let paperSize = 'A4';
+                if (driver === 'escpos') {
+                    paperSize = '80mm';
+                } else if (driver === 'tspl_2col') {
+                    paperSize = '75x20mm_2col';
+                } else if (driver === 'tspl') {
+                    paperSize = '50x30mm';
+                }
+
                 newPrinters[name] = {
                     name: name,
                     type: type,
                     ip: ipVal,
                     target: targetVal,
-                    driver_type: driver,
+                    driver_type: (driver === 'tspl_2col') ? 'tspl' : driver,
                     auto_cut: driver === 'escpos',
-                    paper_size: (driver === 'escpos') ? '80mm' : (driver === 'tspl' ? '50x30mm' : 'A4')
+                    paper_size: paperSize
                 };
             });
 
@@ -1570,20 +1598,27 @@
                 
                 document.getElementById('paperWidth').value = currentTemplate.paper.width_mm || 80;
                 document.getElementById('paperHeight').value = currentTemplate.paper.height_mm || 130;
+                if (document.getElementById('paperColumns')) {
+                    document.getElementById('paperColumns').value = currentTemplate.paper.columns || 1;
+                }
+                if (document.getElementById('paperColumnGap')) {
+                    document.getElementById('paperColumnGap').value = currentTemplate.paper.column_gap_mm || 2.5;
+                }
                 document.getElementById('sampleDataJson').value = JSON.stringify(currentTemplate.sample_data || {}, null, 2);
                 
                 const badge = document.getElementById('paperSizeBadge');
-                if (badge) badge.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm`;
+                if (badge) badge.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm` + (currentTemplate.paper.columns === 2 ? ' (2 Kolom)' : '');
                 
                 const activeBadge = document.getElementById('activeTemplateBadge');
-                if (activeBadge) activeBadge.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm`;
+                if (activeBadge) activeBadge.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm` + (currentTemplate.paper.columns === 2 ? ' (2 Kolom)' : '');
 
                 const sel = document.getElementById('selTemplate');
                 if (sel && sel.value !== id) sel.value = id;
 
                 const presetSel = document.getElementById('presetPaperSelect');
                 if (presetSel) {
-                    const key = `${currentTemplate.paper.width_mm}x${currentTemplate.paper.height_mm}`;
+                    const is2C = currentTemplate.paper.columns === 2;
+                    const key = `${currentTemplate.paper.width_mm}x${currentTemplate.paper.height_mm}` + (is2C ? '_2col' : '');
                     const hasOpt = Array.from(presetSel.options).some(o => o.value === key);
                     presetSel.value = hasOpt ? key : 'custom';
                 }
@@ -1606,15 +1641,23 @@
             canvas.style.width = (w * MM_TO_PX) + 'px';
             canvas.style.height = (h * MM_TO_PX) + 'px';
 
+            const is2C = currentTemplate && currentTemplate.paper && currentTemplate.paper.columns === 2;
             const badge = document.getElementById('paperSizeBadge');
-            if (badge) badge.innerText = `${w} × ${h} mm`;
+            if (badge) badge.innerText = `${w} × ${h} mm` + (is2C ? ' (2 Kolom)' : '');
 
             const activeBadge = document.getElementById('activeTemplateBadge');
-            if (activeBadge) activeBadge.innerText = `${w} × ${h} mm`;
+            if (activeBadge) activeBadge.innerText = `${w} × ${h} mm` + (is2C ? ' (2 Kolom)' : '');
 
             if (currentTemplate && currentTemplate.paper) {
                 currentTemplate.paper.width_mm = w;
                 currentTemplate.paper.height_mm = h;
+                const colSel = document.getElementById('paperColumns');
+                if (colSel) currentTemplate.paper.columns = parseInt(colSel.value) || 1;
+                const gapInp = document.getElementById('paperColumnGap');
+                if (gapInp) currentTemplate.paper.column_gap_mm = parseFloat(gapInp.value) || 2.5;
+                if (currentTemplate.paper.columns === 2) {
+                    currentTemplate.paper.label_width_mm = (w - currentTemplate.paper.column_gap_mm) / 2;
+                }
             }
         }
 
@@ -1625,18 +1668,46 @@
                 const card = document.getElementById('card_' + currentTemplate.id);
                 if (card) {
                     const b = card.querySelector('.template-card-badge');
-                    if (b) b.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm`;
+                    if (b) b.innerText = `${currentTemplate.paper.width_mm} × ${currentTemplate.paper.height_mm} mm` + (currentTemplate.paper.columns === 2 ? ' (2 Kolom)' : '');
                 }
             }
         }
 
         function applyPaperPreset(preset) {
             if (preset === 'custom') return;
-            const [w, h] = preset.split('x').map(Number);
+            const is2Col = preset.includes('_2col');
+            const clean = preset.replace('_2col', '');
+            const [w, h] = clean.split('x').map(Number);
             document.getElementById('paperWidth').value = w;
             document.getElementById('paperHeight').value = h;
+            const colSel = document.getElementById('paperColumns');
+            if (colSel) colSel.value = is2Col ? '2' : '1';
+            
+            if (currentTemplate && currentTemplate.paper) {
+                currentTemplate.paper.width_mm = w;
+                currentTemplate.paper.height_mm = h;
+                currentTemplate.paper.columns = is2Col ? 2 : 1;
+                if (is2Col) {
+                    currentTemplate.paper.column_gap_mm = 2.5;
+                    currentTemplate.paper.label_width_mm = (w - 2.5) / 2;
+                }
+            }
             updateCanvasFromInputs();
-            showToast(`Ukuran kertas diatur ke ${w} × ${h} mm`);
+            showToast(`Ukuran kertas diatur ke ${w} × ${h} mm ${is2Col ? '(2 Kolom Kanan-Kiri)' : ''}`);
+        }
+
+        function onColumnsChange(val) {
+            const cols = parseInt(val) || 1;
+            if (currentTemplate && currentTemplate.paper) {
+                currentTemplate.paper.columns = cols;
+                if (cols === 2) {
+                    const w = parseFloat(document.getElementById('paperWidth').value) || 75;
+                    const gap = parseFloat(document.getElementById('paperColumnGap').value) || 2.5;
+                    currentTemplate.paper.column_gap_mm = gap;
+                    currentTemplate.paper.label_width_mm = (w - gap) / 2;
+                }
+            }
+            updateCanvasFromInputs();
         }
 
         // ================= INTERACTIVE DRAG TO RESIZE PAPER =================
@@ -1751,6 +1822,45 @@
 
             const paperW = currentTemplate.paper.width_mm || 80;
 
+            if (currentTemplate.paper && currentTemplate.paper.columns === 2) {
+                const labelW = currentTemplate.paper.label_width_mm || 35;
+                const gapMM = currentTemplate.paper.column_gap_mm || 2.5;
+                const centerMm = labelW + (gapMM / 2);
+                
+                const guide = document.createElement('div');
+                guide.style.position = 'absolute';
+                guide.style.top = '0';
+                guide.style.bottom = '0';
+                guide.style.left = (centerMm * MM_TO_PX) + 'px';
+                guide.style.width = '1px';
+                guide.style.borderLeft = '1px dashed #0284c7';
+                guide.style.pointerEvents = 'none';
+                guide.style.zIndex = '5';
+                canvas.appendChild(guide);
+
+                const tagKiri = document.createElement('div');
+                tagKiri.style.position = 'absolute';
+                tagKiri.style.bottom = '2px';
+                tagKiri.style.left = '4px';
+                tagKiri.style.fontSize = '9px';
+                tagKiri.style.color = '#0284c7';
+                tagKiri.style.fontWeight = 'bold';
+                tagKiri.style.pointerEvents = 'none';
+                tagKiri.innerText = '⬅️ Stiker 1';
+                canvas.appendChild(tagKiri);
+
+                const tagKanan = document.createElement('div');
+                tagKanan.style.position = 'absolute';
+                tagKanan.style.bottom = '2px';
+                tagKanan.style.left = ((labelW + gapMM + 4) * MM_TO_PX) + 'px';
+                tagKanan.style.fontSize = '9px';
+                tagKanan.style.color = '#0284c7';
+                tagKanan.style.fontWeight = 'bold';
+                tagKanan.style.pointerEvents = 'none';
+                tagKanan.innerText = '➡️ Stiker 2 (Twin)';
+                canvas.appendChild(tagKanan);
+            }
+
             let sampleData = {};
             try {
                 sampleData = JSON.parse(document.getElementById('sampleDataJson').value || '{}');
@@ -1864,6 +1974,20 @@
                 };
 
                 canvas.appendChild(div);
+
+                if (currentTemplate.paper && currentTemplate.paper.columns === 2) {
+                    const labelW = currentTemplate.paper.label_width_mm || 35;
+                    const gapMM = currentTemplate.paper.column_gap_mm || 2.5;
+                    const offsetPx = (labelW + gapMM) * MM_TO_PX;
+                    
+                    const clone = div.cloneNode(true);
+                    clone.className = 'canvas-el ghost-col-el';
+                    clone.style.pointerEvents = 'none';
+                    clone.style.opacity = '0.9';
+                    const curLeft = parseFloat(div.style.left) || 0;
+                    clone.style.left = (curLeft + offsetPx) + 'px';
+                    canvas.appendChild(clone);
+                }
             });
         }
 
@@ -2098,7 +2222,8 @@
 
         function onModalPresetChange(val) {
             if (val === 'custom') return;
-            const [w, h] = val.split('x').map(Number);
+            const clean = val.replace('_2col', '');
+            const [w, h] = clean.split('x').map(Number);
             document.getElementById('modalTmplWidth').value = w;
             document.getElementById('modalTmplHeight').value = h;
         }
@@ -2123,9 +2248,10 @@
             const w = parseFloat(document.getElementById('modalTmplWidth').value) || 80;
             const h = parseFloat(document.getElementById('modalTmplHeight').value) || 130;
             const preset = document.getElementById('modalTmplPreset').value;
+            const is2Col = preset.includes('_2col');
 
             let cat = "struk";
-            if (preset === '50x30' || (w <= 60 && h <= 50)) {
+            if (preset === '50x30' || is2Col || (w <= 80 && h <= 50)) {
                 cat = "label";
             } else if (preset === '25x280' || (h >= 200 && w <= 35)) {
                 cat = "gelang";
@@ -2250,7 +2376,10 @@
                     height_mm: h,
                     orientation: h > w ? "portrait" : "landscape",
                     margin_top: 2.0,
-                    margin_left: 3.0
+                    margin_left: 3.0,
+                    columns: is2Col ? 2 : 1,
+                    column_gap_mm: is2Col ? 2.5 : 0,
+                    label_width_mm: is2Col ? (w - 2.5) / 2 : w
                 },
                 elements: initialElements,
                 sample_data: {

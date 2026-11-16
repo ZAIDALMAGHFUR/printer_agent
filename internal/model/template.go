@@ -2,11 +2,14 @@ package model
 
 // PaperConfig mendefinisikan dimensi fisik kertas dalam satuan milimeter
 type PaperConfig struct {
-	WidthMM     float64 `json:"width_mm"`     // Lebar kertas dalam mm (cth: 50, 70, 80, 100, 210)
-	HeightMM    float64 `json:"height_mm"`    // Tinggi kertas dalam mm (cth: 30, 40, atau 0 untuk continuous roll)
-	Orientation string  `json:"orientation"`  // "portrait" atau "landscape"
-	MarginTop   float64 `json:"margin_top"`   // Margin atas dalam mm
-	MarginLeft  float64 `json:"margin_left"`  // Margin kiri dalam mm
+	WidthMM      float64 `json:"width_mm"`                 // Lebar kertas total dalam mm (cth: 50, 70, 75, 80, 100, 210)
+	HeightMM     float64 `json:"height_mm"`                // Tinggi kertas dalam mm (cth: 20, 25, 30, 40, atau 0 untuk continuous roll)
+	Orientation  string  `json:"orientation"`              // "portrait" atau "landscape"
+	MarginTop    float64 `json:"margin_top"`               // Margin atas dalam mm
+	MarginLeft   float64 `json:"margin_left"`              // Margin kiri dalam mm
+	Columns      int     `json:"columns,omitempty"`        // Jumlah kolom stiker (1 atau 2 kolom kanan-kiri)
+	ColumnGapMM  float64 `json:"column_gap_mm,omitempty"`  // Jarak/gap antar kolom stiker dalam mm (default 2-3 mm)
+	LabelWidthMM float64 `json:"label_width_mm,omitempty"` // Lebar fisik satu stiker dalam mm (cth: 35 mm)
 }
 
 // VisualElement merepresentasikan satu komponen visual pada kanvas desain

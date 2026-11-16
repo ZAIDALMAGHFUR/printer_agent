@@ -68,9 +68,9 @@
       "type": "usb",
       "target": "TSC TTP-244 Pro",
       "driver_type": "tspl",
-      "paper_size": "50x30mm",
+      "paper_size": "75x20mm_2col",
       "auto_cut": false,
-      "description": "Printer barcode identitas pasien"
+      "description": "Printer barcode identitas pasien (2 kolom kanan-kiri)"
     }
   }
 }
