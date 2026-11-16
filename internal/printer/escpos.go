@@ -44,6 +44,8 @@ func BuildESCPOS(lines []model.PrintLine, autoCut bool, openDrawer bool) ([]byte
 		buf.Write(cmdKickDrawer)
 	}
 
+	hasCut := false
+
 	// 3. Proses setiap baris
 	for _, line := range lines {
 		switch strings.ToLower(line.Type) {
@@ -98,8 +100,9 @@ func BuildESCPOS(lines []model.PrintLine, autoCut bool, openDrawer bool) ([]byte
 
 		case "cut":
 			// Perintah potong kertas di tengah konten
-			buf.Write([]byte("\n\n\n"))
+			buf.Write([]byte("\n\n\n\n"))
 			buf.Write(cmdCutFull)
+			hasCut = true
 
 		case "feed", "newline":
 			n := line.Height
@@ -187,8 +190,8 @@ func BuildESCPOS(lines []model.PrintLine, autoCut bool, openDrawer bool) ([]byte
 		}
 	}
 
-	// 4. Feed & Potong Kertas di akhir
-	if autoCut {
+	// 4. Feed & Potong Kertas di akhir jika belum dipotong
+	if autoCut && !hasCut {
 		buf.Write([]byte("\n\n\n\n"))
 		buf.Write(cmdCutFull)
 	}

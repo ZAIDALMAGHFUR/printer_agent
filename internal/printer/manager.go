@@ -215,9 +215,9 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 			docName = req.PrinterTarget
 		}
 
-		// A. Jika dokumen dirender dari visual template atau driver bertipe universal/driver/gdi
-		isUniversal := generatedPDFPath != "" || mapping.DriverType == "universal" || mapping.DriverType == "driver" || mapping.DriverType == "gdi"
-		if isUniversal && generatedPDFPath != "" {
+		// A. Jika driver memang di-setting sebagai Universal/Driver Windows (GDI)
+		isUniversal := (mapping.DriverType == "universal" || mapping.DriverType == "driver" || mapping.DriverType == "gdi") && generatedPDFPath != ""
+		if isUniversal {
 			err := PrintDocumentUniversal(mapping.Target, docName, generatedPDFPath)
 			if err == nil {
 				return &model.PrintResponse{

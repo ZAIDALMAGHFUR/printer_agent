@@ -113,7 +113,6 @@ func buildAntrianTemplate(d map[string]interface{}) []model.PrintLine {
 		})
 	}
 
-	lines = append(lines, model.PrintLine{Type: "cut"})
 	return lines
 }
 
@@ -205,7 +204,6 @@ func buildResepNonRacikanTemplate(d map[string]interface{}) []model.PrintLine {
 		Align: "center",
 		Size:  "small",
 	})
-	lines = append(lines, model.PrintLine{Type: "cut"})
 
 	return lines
 }
@@ -316,7 +314,6 @@ func buildResepRacikanTemplate(d map[string]interface{}) []model.PrintLine {
 		Align: "center",
 		Size:  "small",
 	})
-	lines = append(lines, model.PrintLine{Type: "cut"})
 
 	return lines
 }
