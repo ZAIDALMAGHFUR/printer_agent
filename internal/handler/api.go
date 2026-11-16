@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -36,7 +37,8 @@ func (h *APIHandler) EnableCORS(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Access-Control-Request-Private-Network")
+		w.Header().Set("Access-Control-Allow-Private-Network", "true")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
@@ -56,14 +58,52 @@ func (h *APIHandler) HandlePrint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "error",
+			"message": "Gagal membaca body request: " + err.Error(),
+		})
+		return
+	}
+
 	var req model.PrintRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "error",
 			"message": "Payload JSON tidak valid: " + err.Error(),
 		})
 		return
+	}
+
+	// 1. Dukung format wrapper standar backend SIMRS: {"status":"success", "payload": {...}}
+	if req.PrinterTarget == "" {
+		var wrappedPayload struct {
+			Payload model.PrintRequest `json:"payload"`
+		}
+		if err := json.Unmarshal(bodyBytes, &wrappedPayload); err == nil && wrappedPayload.Payload.PrinterTarget != "" {
+			req = wrappedPayload.Payload
+		}
+	}
+
+	// 2. Dukung format wrapper {"data": {...}}
+	if req.PrinterTarget == "" {
+		var wrappedData struct {
+			Data model.PrintRequest `json:"data"`
+		}
+		if err := json.Unmarshal(bodyBytes, &wrappedData); err == nil && wrappedData.Data.PrinterTarget != "" {
+			req = wrappedData.Data
+		}
+	}
+
+	// 3. Fallback cerdas untuk endpoint antrian jika printer_target belum terisi
+	if req.PrinterTarget == "" && strings.Contains(r.URL.Path, "antrian") {
+		req.PrinterTarget = "CetakAntrian"
+		if req.DocumentType == "" {
+			req.DocumentType = "antrian_kiosk"
+		}
 	}
 
 	if req.PrinterTarget == "" {
@@ -99,8 +139,8 @@ func (h *APIHandler) HandlePrint(w http.ResponseWriter, r *http.Request) {
 
 // HandlePrintAntrian menangani endpoint khusus POST /printgo/cetak/antrian
 func (h *APIHandler) HandlePrintAntrian(w http.ResponseWriter, r *http.Request) {
-	// Teruskan ke HandlePrint dengan preset printer_target = CetakAntrian
-	r.URL.Path = "/printgo/cetak"
+	// Teruskan ke HandlePrint dengan path antrian agar terdeteksi fallback CetakAntrian
+	r.URL.Path = "/printgo/cetak/antrian"
 	h.HandlePrint(w, r)
 }
 
