@@ -87,8 +87,10 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 		mapping.DriverType = DetectDriver(req.PrinterTarget, req.PrinterName, mapping.DriverType)
 	}
 
-	// 2. Jika opsi View = true, langsung jadikan PDF untuk preview di layar browser
-	if req.Options.View || mapping.Type == model.PrinterTypePDF {
+	// 2. Jika opsi View / Preview diminta atau printer bertipe Virtual PDF
+	isViewMode := req.View || req.Options.View || strings.EqualFold(req.Mode, "view") || strings.EqualFold(req.Mode, "preview") || strings.EqualFold(req.Options.Mode, "view") || strings.EqualFold(req.Options.Mode, "preview") || mapping.Type == model.PrinterTypePDF
+
+	if isViewMode {
 		pdfPath := generatedPDFPath
 		if pdfPath == "" {
 			var err error
@@ -97,13 +99,19 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 				return nil, fmt.Errorf("gagal membuat PDF preview: %w", err)
 			}
 		}
+		viewURL := toLocalPDFURL(pdfPath, cfg.ServerPort, cfg.PDFSaveDir)
 		return &model.PrintResponse{
-			Status:        "saved_pdf",
+			Status:        "success",
+			Action:        "view",
+			Mode:          "view",
+			OpenTab:       true,
 			JobID:         req.RequestID,
-			Message:       "Dokumen berhasil disimpan sebagai PDF (Preview Mode)",
+			Message:       "Dokumen berhasil disiapkan untuk preview di browser",
 			TargetPrinter: "Virtual PDF",
 			TargetType:    string(model.PrinterTypePDF),
 			FilePath:      pdfPath,
+			PDFURL:        viewURL,
+			ViewURL:       viewURL,
 			DurationMs:    time.Since(start).Milliseconds(),
 			Timestamp:     time.Now().Format(time.RFC3339),
 		}, nil
@@ -136,6 +144,9 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 					log.Printf("[RELAY] Berhasil dicetak via Spooler lokal ke '%s'", mapping.Target)
 					return &model.PrintResponse{
 						Status:        "success",
+						Action:        "print",
+						Mode:          "print",
+						OpenTab:       false,
 						JobID:         req.RequestID,
 						Message:       fmt.Sprintf("Berhasil dicetak ke printer '%s'", mapping.Target),
 						TargetPrinter: mapping.Target,
@@ -151,13 +162,19 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 				log.Printf("[FALLBACK] Relay gagal (%v), fallback otomatis simpan PDF lokal", err)
 				pdfPath, pdfErr := GenerateReceiptPDF(req, cfg.PDFSaveDir)
 				if pdfErr == nil {
+					pdfURL := toLocalPDFURL(pdfPath, cfg.ServerPort, cfg.PDFSaveDir)
 					return &model.PrintResponse{
 						Status:        "saved_pdf",
+						Action:        "saved_pdf",
+						Mode:          "print",
+						OpenTab:       false,
 						JobID:         req.RequestID,
 						Message:       fmt.Sprintf("Relay ke %s gagal, tersimpan aman sebagai PDF lokal", relayHost),
 						TargetPrinter: "Local PDF Fallback",
 						TargetType:    string(model.PrinterTypePDF),
 						FilePath:      pdfPath,
+						PDFURL:        pdfURL,
+						ViewURL:       pdfURL,
 						DurationMs:    time.Since(start).Milliseconds(),
 						Timestamp:     time.Now().Format(time.RFC3339),
 					}, nil
@@ -184,13 +201,19 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 			if cfg.AutoSavePDF {
 				log.Printf("[FALLBACK] Network Printer offline (%v), simpan PDF lokal", err)
 				pdfPath, _ := GenerateReceiptPDF(req, cfg.PDFSaveDir)
+				pdfURL := toLocalPDFURL(pdfPath, cfg.ServerPort, cfg.PDFSaveDir)
 				return &model.PrintResponse{
 					Status:        "saved_pdf",
+					Action:        "saved_pdf",
+					Mode:          "print",
+					OpenTab:       false,
 					JobID:         req.RequestID,
 					Message:       fmt.Sprintf("Network printer offline, otomatis tersimpan ke PDF: %s", pdfPath),
 					TargetPrinter: mapping.Target,
 					TargetType:    string(model.PrinterTypePDF),
 					FilePath:      pdfPath,
+					PDFURL:        pdfURL,
+					ViewURL:       pdfURL,
 					DurationMs:    time.Since(start).Milliseconds(),
 					Timestamp:     time.Now().Format(time.RFC3339),
 				}, nil
@@ -200,6 +223,9 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 
 		return &model.PrintResponse{
 			Status:        "success",
+			Action:        "print",
+			Mode:          "print",
+			OpenTab:       false,
 			JobID:         req.RequestID,
 			Message:       "Berhasil dicetak ke Network Printer",
 			TargetPrinter: mapping.Target,
@@ -221,13 +247,19 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 		if isUniversal {
 			err := PrintDocumentUniversal(mapping.Target, docName, generatedPDFPath)
 			if err == nil {
+				pdfURL := toLocalPDFURL(generatedPDFPath, cfg.ServerPort, cfg.PDFSaveDir)
 				return &model.PrintResponse{
 					Status:        "success",
+					Action:        "print",
+					Mode:          "print",
+					OpenTab:       false,
 					JobID:         req.RequestID,
 					Message:       "Berhasil dicetak via Universal Spooler",
 					TargetPrinter: mapping.Target,
 					TargetType:    string(model.PrinterTypeUSB),
 					FilePath:      generatedPDFPath,
+					PDFURL:        pdfURL,
+					ViewURL:       pdfURL,
 					DurationMs:    time.Since(start).Milliseconds(),
 					Timestamp:     time.Now().Format(time.RFC3339),
 				}, nil
@@ -239,13 +271,19 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 		if err != nil {
 			// Jika rawBytes gagal tapi ada generatedPDFPath, fallback simpan PDF
 			if generatedPDFPath != "" {
+				pdfURL := toLocalPDFURL(generatedPDFPath, cfg.ServerPort, cfg.PDFSaveDir)
 				return &model.PrintResponse{
 					Status:        "saved_pdf",
+					Action:        "saved_pdf",
+					Mode:          "print",
+					OpenTab:       false,
 					JobID:         req.RequestID,
 					Message:       "Dokumen tersimpan aman sebagai PDF",
 					TargetPrinter: mapping.Target,
 					TargetType:    string(model.PrinterTypePDF),
 					FilePath:      generatedPDFPath,
+					PDFURL:        pdfURL,
+					ViewURL:       pdfURL,
 					DurationMs:    time.Since(start).Milliseconds(),
 					Timestamp:     time.Now().Format(time.RFC3339),
 				}, nil
@@ -266,13 +304,19 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 						return nil, err
 					}
 				}
+				pdfURL := toLocalPDFURL(pdfPath, cfg.ServerPort, cfg.PDFSaveDir)
 				return &model.PrintResponse{
 					Status:        "saved_pdf",
+					Action:        "saved_pdf",
+					Mode:          "print",
+					OpenTab:       false,
 					JobID:         req.RequestID,
 					Message:       fmt.Sprintf("Printer fisik belum terhubung, otomatis tersimpan sebagai PDF: %s", pdfPath),
 					TargetPrinter: mapping.Target,
 					TargetType:    string(model.PrinterTypePDF),
 					FilePath:      pdfPath,
+					PDFURL:        pdfURL,
+					ViewURL:       pdfURL,
 					DurationMs:    time.Since(start).Milliseconds(),
 					Timestamp:     time.Now().Format(time.RFC3339),
 				}, nil
@@ -282,6 +326,9 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 
 		return &model.PrintResponse{
 			Status:        "success",
+			Action:        "print",
+			Mode:          "print",
+			OpenTab:       false,
 			JobID:         req.RequestID,
 			Message:       "Berhasil dicetak ke Printer Fisik",
 			TargetPrinter: mapping.Target,
@@ -430,5 +477,18 @@ func (m *Manager) downloadPDF(pdfURL, saveDir, reqID, docName string) (string, e
 	log.Printf("[DOWNLOAD-PDF] Sukses mengunduh dan menyimpan PDF ke: %s", fullPath)
 	return fullPath, nil
 }
+
+// toLocalPDFURL mengubah path absolut file PDF di disk lokal menjadi URL HTTP lokal yang dapat diakses browser
+func toLocalPDFURL(pdfPath string, port int, saveDir string) string {
+	if pdfPath == "" {
+		return ""
+	}
+	relPath, err := filepath.Rel(saveDir, pdfPath)
+	if err == nil && !strings.HasPrefix(relPath, "..") {
+		return fmt.Sprintf("http://127.0.0.1:%d/printgo/pdf/%s", port, filepath.ToSlash(relPath))
+	}
+	return fmt.Sprintf("http://127.0.0.1:%d/printgo/pdf/%s", port, filepath.Base(pdfPath))
+}
+
 
 

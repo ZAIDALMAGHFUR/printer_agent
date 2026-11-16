@@ -50,6 +50,10 @@ func main() {
 	mux.HandleFunc("/printgo/cetak", api.EnableCORS(api.HandlePrint))
 	mux.HandleFunc("/printgo/cetak/antrian", api.EnableCORS(api.HandlePrintAntrian))
 	mux.HandleFunc("/printgo/status", api.EnableCORS(api.HandleStatus))
+	mux.HandleFunc("/printgo/pdf/", api.EnableCORS(api.HandleServePDF))
+	mux.HandleFunc("/printgo/pdf", api.EnableCORS(api.HandleServePDF))
+	mux.HandleFunc("/printgo/view/", api.EnableCORS(api.HandleServePDF))
+	mux.HandleFunc("/printgo/view", api.EnableCORS(api.HandleServePDF))
 
 	// API Template Management & Visual Designer
 	mux.HandleFunc("/printgo/templates", api.EnableCORS(api.HandleTemplates))

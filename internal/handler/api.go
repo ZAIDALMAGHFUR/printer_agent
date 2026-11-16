@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -448,5 +449,61 @@ func (h *APIHandler) HandleUpdaterSync(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(upd.GetStatus())
 }
+
+// HandleServePDF melayani file PDF lokal agar browser SIMRS dapat membuka/preview via new tab (window.open)
+func (h *APIHandler) HandleServePDF(w http.ResponseWriter, r *http.Request) {
+	cfg := h.cfgMgr.GetConfig()
+	baseDir := cfg.PDFSaveDir
+
+	// Ambil sub-path dari URL (contoh: /printgo/pdf/2026-11-16/antrian_xxx.pdf) atau query ?file=...
+	reqPath := r.URL.Path
+	for _, prefix := range []string{"/printgo/pdf/", "/printgo/pdf", "/printgo/view/", "/printgo/view"} {
+		if strings.HasPrefix(reqPath, prefix) {
+			reqPath = strings.TrimPrefix(reqPath, prefix)
+			break
+		}
+	}
+
+	if reqPath == "" {
+		reqPath = r.URL.Query().Get("file")
+	}
+
+	reqPath = strings.TrimPrefix(reqPath, "/")
+	if reqPath == "" {
+		http.Error(w, "File tidak ditentukan", http.StatusBadRequest)
+		return
+	}
+
+	// Cegah directory traversal
+	cleanSub := filepath.Clean(filepath.FromSlash(reqPath))
+	if strings.HasPrefix(cleanSub, "..") || filepath.IsAbs(cleanSub) {
+		// Jika pengirim mengirim absolute path yang ada di baseDir, ambil basename atau relative path
+		if strings.HasPrefix(cleanSub, baseDir) {
+			cleanSub = strings.TrimPrefix(cleanSub, baseDir)
+			cleanSub = strings.TrimPrefix(cleanSub, string(filepath.Separator))
+		} else {
+			cleanSub = filepath.Base(cleanSub)
+		}
+	}
+
+	fullPath := filepath.Join(baseDir, cleanSub)
+	info, err := os.Stat(fullPath)
+	if err != nil || info.IsDir() {
+		// Coba cari langsung di baseDir jika hanya nama file yang dikirim
+		altPath := filepath.Join(baseDir, filepath.Base(cleanSub))
+		altInfo, altErr := os.Stat(altPath)
+		if altErr == nil && !altInfo.IsDir() {
+			fullPath = altPath
+		} else {
+			http.Error(w, "File PDF tidak ditemukan: "+cleanSub, http.StatusNotFound)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", filepath.Base(fullPath)))
+	http.ServeFile(w, r, fullPath)
+}
+
 
 

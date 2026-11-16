@@ -32,11 +32,12 @@ type PrintLine struct {
 
 // PrintOptions mendefinisikan opsi cetak tambahan
 type PrintOptions struct {
-	Copies         int  `json:"copies,omitempty"`           // Jumlah rangkap cetak (default: 1)
-	CutPaper       bool `json:"cut_paper,omitempty"`        // Potong kertas otomatis (default: true)
-	OpenCashDrawer bool `json:"open_cash_drawer,omitempty"` // Buka laci kasir (kick cash drawer)
-	SoundBuzzer    bool `json:"sound_buzzer,omitempty"`     // Bunyikan buzzer printer jika ada
-	View           bool `json:"view,omitempty"`             // Jika true, preview PDF di browser (tidak langsung cetak)
+	Copies         int    `json:"copies,omitempty"`           // Jumlah rangkap cetak (default: 1)
+	CutPaper       bool   `json:"cut_paper,omitempty"`        // Potong kertas otomatis (default: true)
+	OpenCashDrawer bool   `json:"open_cash_drawer,omitempty"` // Buka laci kasir (kick cash drawer)
+	SoundBuzzer    bool   `json:"sound_buzzer,omitempty"`     // Bunyikan buzzer printer jika ada
+	View           bool   `json:"view,omitempty"`             // Jika true, preview PDF di browser (tidak langsung cetak)
+	Mode           string `json:"mode,omitempty"`             // "print" (default) atau "view" / "preview"
 }
 
 // PrintRequest adalah payload utama yang dikirim dari Web SIMRS ke Agent
@@ -53,16 +54,23 @@ type PrintRequest struct {
 	PDFURL        string                 `json:"pdf_url,omitempty"`        // URL PDF dari server backend untuk diunduh & dicetak
 	Data          map[string]interface{} `json:"data,omitempty"`           // Key-value data mentah jika pakai template
 	Options       PrintOptions           `json:"options,omitempty"`        // Opsi cetak tambahan
+	Mode          string                 `json:"mode,omitempty"`           // "print" (default) atau "view"
+	View          bool                   `json:"view,omitempty"`           // shorthand view mode
 }
 
 // PrintResponse adalah respon JSON standar yang dikembalikan Agen ke SIMRS
 type PrintResponse struct {
 	Status        string `json:"status"`                   // success, queued, saved_pdf, error
+	Action        string `json:"action,omitempty"`         // "print" atau "view"
+	Mode          string `json:"mode,omitempty"`           // "print" atau "view"
+	OpenTab       bool   `json:"open_tab"`                 // true jika mode view (instruksi ke web untuk buka new tab)
 	JobID         string `json:"job_id,omitempty"`         // ID unik pekerjaan cetak
 	Message       string `json:"message"`                  // Pesan status
 	TargetPrinter string `json:"target_printer,omitempty"` // Nama printer yang digunakan
 	TargetType    string `json:"target_type,omitempty"`    // usb, socket, relay, pdf
-	FilePath      string `json:"file_path,omitempty"`      // Path file jika disimpan sebagai PDF
+	FilePath      string `json:"file_path,omitempty"`      // Path file jika disimpan sebagai PDF di disk lokal
+	PDFURL        string `json:"pdf_url,omitempty"`        // URL HTTP lokal untuk membuka/mengunduh PDF via browser
+	ViewURL       string `json:"view_url,omitempty"`       // URL HTTP lokal yang sama untuk open tab di frontend (window.open)
 	DurationMs    int64  `json:"duration_ms,omitempty"`    // Durasi pemrosesan dalam milidetik
 	Timestamp     string `json:"timestamp"`                // RFC3339 timestamp
 }
