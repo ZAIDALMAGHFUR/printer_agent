@@ -302,6 +302,20 @@ func (h *APIHandler) HandleTemplates(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(tm.ListTemplates())
 
 	case http.MethodPost:
+		if r.URL.Query().Get("action") == "restore" {
+			if err := tm.RestoreDefaultTemplates(); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(map[string]string{"error": "Gagal memulihkan template bawaan: " + err.Error()})
+				return
+			}
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"status":    "success",
+				"message":   "Template bawaan berhasil dipulihkan",
+				"templates": tm.ListTemplates(),
+			})
+			return
+		}
+
 		var tmpl model.TemplateDefinition
 		if err := json.NewDecoder(r.Body).Decode(&tmpl); err != nil {
 			w.WriteHeader(http.StatusBadRequest)

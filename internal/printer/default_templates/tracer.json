@@ -1,0 +1,241 @@
+{
+  "id": "tracer",
+  "name": "Tracer Masuk (80x100mm)",
+  "category": "struk",
+  "description": "Struk tracer masuk rekam medis pasien poliklinik / rawat jalan",
+  "version": "1.0.0",
+  "updated_at": "2026-11-13T10:20:00Z",
+  "paper": {
+    "width_mm": 80,
+    "height_mm": 100,
+    "orientation": "portrait",
+    "margin_top": 3.0,
+    "margin_left": 4.0
+  },
+  "elements": [
+    {
+      "id": "el_tracer_title",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 7.0,
+      "width_mm": 80.0,
+      "content": "TRACER MASUK",
+      "font_family": "Arial",
+      "font_size": 14.0,
+      "font_weight": "bold",
+      "align": "center"
+    },
+    {
+      "id": "el_rm_big",
+      "type": "text",
+      "x_mm": 40.0,
+      "y_mm": 15.0,
+      "width_mm": 80.0,
+      "content": "{{.no_mr}}",
+      "font_family": "Arial",
+      "font_size": 21.0,
+      "font_weight": "bold",
+      "align": "center"
+    },
+    {
+      "id": "el_nama",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 25.0,
+      "content": "{{.nama_pasien}} ({{.status_pasien}})",
+      "font_family": "Arial",
+      "font_size": 11.5,
+      "font_weight": "bold",
+      "align": "left"
+    },
+    {
+      "id": "el_reg_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 31.0,
+      "content": "No. Reg.",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_reg_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 31.0,
+      "content": ": {{.no_registrasi}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_masuk_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 36.5,
+      "content": "Masuk",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_masuk_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 36.5,
+      "content": ": {{.tgl_masuk}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_urut_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 42.0,
+      "content": "No. Urut",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_urut_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 42.0,
+      "content": ": {{.no_urut}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_poli_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 47.5,
+      "content": "Poli/SMF",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_poli_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 47.5,
+      "content": ": {{.poli}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_bayar_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 53.0,
+      "content": "Cr.Bayar",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_bayar_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 53.0,
+      "content": ": {{.cara_bayar}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_dokter_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 58.5,
+      "content": "Dokter",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_dokter_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 58.5,
+      "content": ": {{.nama_dokter}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_poliak_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 70.0,
+      "content": "Poli Akhir",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_poliak_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 70.0,
+      "content": ": {{.poli_akhir}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_tglak_lbl",
+      "type": "text",
+      "x_mm": 4.0,
+      "y_mm": 75.5,
+      "content": "Tgl Poli Akhir",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    },
+    {
+      "id": "el_tglak_val",
+      "type": "text",
+      "x_mm": 25.0,
+      "y_mm": 75.5,
+      "content": ": {{.tgl_poli_akhir}}",
+      "font_family": "Arial",
+      "font_size": 9.0,
+      "font_weight": "normal",
+      "align": "left"
+    }
+  ],
+  "sample_data": {
+    "no_mr": "00150515",
+    "nama_pasien": "NANI",
+    "status_pasien": "-",
+    "no_registrasi": "2611000008",
+    "tgl_masuk": "02-11-2026 12:15:40",
+    "no_urut": "1",
+    "poli": "Penyakit Dalam",
+    "cara_bayar": "Umum/Pribadi",
+    "nama_dokter": "dr. Ridha Wahyutomo,\nM.Arch, SpMK,CHRA,FISQua",
+    "poli_akhir": "Penyakit Dalam",
+    "tgl_poli_akhir": "13-11-2026 10:13:13"
+  }
+}

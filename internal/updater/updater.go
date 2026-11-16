@@ -55,7 +55,10 @@ var (
 
 // resolveTemplateDir mencari folder templates yang valid
 func resolveTemplateDir(dir string) string {
-	candidates := []string{dir}
+	if dir == "" {
+		dir = "templates"
+	}
+	candidates := []string{}
 	if exe, err := os.Executable(); err == nil {
 		exeDir := filepath.Dir(exe)
 		candidates = append(candidates,
@@ -63,10 +66,16 @@ func resolveTemplateDir(dir string) string {
 			filepath.Join(exeDir, "..", dir),
 		)
 	}
+	candidates = append(candidates, dir)
+
 	for _, p := range candidates {
 		if stat, err := os.Stat(p); err == nil && stat.IsDir() {
 			return p
 		}
+	}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		return filepath.Join(exeDir, dir)
 	}
 	return dir
 }

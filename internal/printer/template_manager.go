@@ -2,6 +2,7 @@ package printer
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -12,6 +13,9 @@ import (
 
 	"smart-print-agent/internal/model"
 )
+
+//go:embed default_templates/*.json
+var defaultTemplatesFS embed.FS
 
 // TemplateManager mengelola penyimpanan, pembacaan, dan render template dinamis
 type TemplateManager struct {
@@ -27,7 +31,10 @@ var (
 
 // resolveTemplateDir mencari lokasi folder templates yang valid (CWD, ExeDir, atau ExeDir/..)
 func resolveTemplateDir(dir string) string {
-	candidates := []string{dir}
+	if dir == "" {
+		dir = "templates"
+	}
+	candidates := []string{}
 	if exe, err := os.Executable(); err == nil {
 		exeDir := filepath.Dir(exe)
 		candidates = append(candidates,
@@ -35,6 +42,7 @@ func resolveTemplateDir(dir string) string {
 			filepath.Join(exeDir, "..", dir),
 		)
 	}
+	candidates = append(candidates, dir)
 
 	// 1. Prioritaskan folder yang sudah memiliki file .json
 	for _, p := range candidates {
@@ -54,6 +62,13 @@ func resolveTemplateDir(dir string) string {
 			return p
 		}
 	}
+
+	// 3. Standar utama: buat di samping executable file agar tidak tersesat ke C:\Windows\System32 saat autostart
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		return filepath.Join(exeDir, dir)
+	}
+
 	return dir
 }
 
@@ -83,34 +98,91 @@ func GetTemplateManager(customDir ...string) *TemplateManager {
 	return tmplMgrInstance
 }
 
+// RestoreDefaultTemplates menulis ulang seluruh default templates dari embedded memory ke disk
+func (tm *TemplateManager) RestoreDefaultTemplates() error {
+	tm.mu.Lock()
+	defer tm.mu.Unlock()
+
+	_ = os.MkdirAll(tm.templateDir, 0755)
+	entries, err := defaultTemplatesFS.ReadDir("default_templates")
+	if err != nil {
+		return err
+	}
+
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".json") {
+			content, readErr := defaultTemplatesFS.ReadFile("default_templates/" + e.Name())
+			if readErr == nil {
+				targetFile := filepath.Join(tm.templateDir, e.Name())
+				_ = os.WriteFile(targetFile, content, 0644)
+				var def model.TemplateDefinition
+				if jsonErr := json.Unmarshal(content, &def); jsonErr == nil && def.ID != "" {
+					tm.templates[strings.ToLower(def.ID)] = &def
+				}
+			}
+		}
+	}
+	return nil
+}
+
 // Reload membaca ulang seluruh file .json dari folder templates
 func (tm *TemplateManager) Reload() error {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
 
-	if err := os.MkdirAll(tm.templateDir, 0755); err != nil {
-		return err
-	}
+	_ = os.MkdirAll(tm.templateDir, 0755)
 
-	files, err := os.ReadDir(tm.templateDir)
-	if err != nil {
-		return err
-	}
-
-	tm.templates = make(map[string]*model.TemplateDefinition)
-	for _, f := range files {
-		if !f.IsDir() && strings.HasSuffix(strings.ToLower(f.Name()), ".json") {
-			filePath := filepath.Join(tm.templateDir, f.Name())
-			data, err := os.ReadFile(filePath)
-			if err != nil {
-				continue
-			}
-			var def model.TemplateDefinition
-			if err := json.Unmarshal(data, &def); err == nil && def.ID != "" {
-				tm.templates[strings.ToLower(def.ID)] = &def
+	// 1. Ekstrak default templates yang di-embed jika file belum ada di disk
+	embeddedEntries, err := defaultTemplatesFS.ReadDir("default_templates")
+	if err == nil {
+		for _, e := range embeddedEntries {
+			if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".json") {
+				targetFile := filepath.Join(tm.templateDir, e.Name())
+				// Jika file belum ada di disk, tuliskan default template agar user bisa langsung mengeditnya
+				if _, statErr := os.Stat(targetFile); os.IsNotExist(statErr) {
+					content, readErr := defaultTemplatesFS.ReadFile("default_templates/" + e.Name())
+					if readErr == nil {
+						_ = os.WriteFile(targetFile, content, 0644)
+					}
+				}
 			}
 		}
 	}
+
+	// 2. Baca seluruh file .json dari disk
+	tm.templates = make(map[string]*model.TemplateDefinition)
+	files, err := os.ReadDir(tm.templateDir)
+	if err == nil {
+		for _, f := range files {
+			if !f.IsDir() && strings.HasSuffix(strings.ToLower(f.Name()), ".json") {
+				filePath := filepath.Join(tm.templateDir, f.Name())
+				data, readErr := os.ReadFile(filePath)
+				if readErr != nil {
+					continue
+				}
+				var def model.TemplateDefinition
+				if jsonErr := json.Unmarshal(data, &def); jsonErr == nil && def.ID != "" {
+					tm.templates[strings.ToLower(def.ID)] = &def
+				}
+			}
+		}
+	}
+
+	// 3. Fallback keamanan memori: jika karena izin disk pembacaan file 0, isi langsung dari embed memory
+	if len(tm.templates) == 0 && embeddedEntries != nil {
+		for _, e := range embeddedEntries {
+			if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".json") {
+				content, readErr := defaultTemplatesFS.ReadFile("default_templates/" + e.Name())
+				if readErr == nil {
+					var def model.TemplateDefinition
+					if jsonErr := json.Unmarshal(content, &def); jsonErr == nil && def.ID != "" {
+						tm.templates[strings.ToLower(def.ID)] = &def
+					}
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
