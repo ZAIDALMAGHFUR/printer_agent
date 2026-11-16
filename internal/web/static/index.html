@@ -500,9 +500,15 @@
                         </select>
                         <span id="activeTemplateBadge" class="pill pill-success" style="font-size: 11px;">-</span>
                     </div>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <button class="btn btn-outline btn-sm" onclick="testPrintCurrentTemplate(true)">👁️ Preview PDF</button>
-                        <button class="btn btn-outline btn-sm" onclick="testPrintCurrentTemplate(false)">🖨️ Test Cetak Langsung</button>
+                        <div style="display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 2px 4px;">
+                            <span style="font-size: 11px; color: var(--text-muted); padding-left: 4px; font-weight: 500;">🎯 Target:</span>
+                            <select id="selTestPrinterTarget" class="no-modern-select" style="border: none; background: transparent; font-size: 11.5px; font-weight: 600; color: var(--primary); padding: 4px 6px; cursor: pointer; outline: none; max-width: 190px;" title="Pilih printer target untuk uji cetak langsung">
+                                <option value="CetakAntrian">CetakAntrian</option>
+                            </select>
+                            <button class="btn btn-outline btn-sm" style="padding: 4px 10px; font-size: 12px; background: #ffffff;" onclick="testPrintCurrentTemplate(false)">🖨️ Test Cetak Langsung</button>
+                        </div>
                         <button class="btn btn-primary btn-sm" onclick="saveCurrentTemplate()">💾 Simpan Perubahan Template</button>
                     </div>
                 </div>
@@ -1167,6 +1173,7 @@
                 if (currentConfig.auto_sync_interval_min) document.getElementById('cfgGitInterval').value = currentConfig.auto_sync_interval_min;
 
                 renderPrinterTable(currentConfig.printers);
+                updateTestPrinterSelect();
                 loadHistory();
                 await loadTemplatesList();
                 initPaperResizeHandles();
@@ -1629,6 +1636,7 @@
                 renderElementList();
                 selectedElIndex = -1;
                 renderPropEditor();
+                updateTestPrinterSelect();
             } catch (err) {
                 showToast("Gagal memuat detail template: " + err.message);
             }
@@ -2431,9 +2439,74 @@
             }
         }
 
+        function updateTestPrinterSelect(preferredTarget) {
+            const sel = document.getElementById('selTestPrinterTarget');
+            if (!sel) return;
+
+            const prevVal = preferredTarget || sel.value;
+            sel.innerHTML = '';
+
+            // Group 1: Target SIMRS (Pemetaan Aktif)
+            const grpConfig = document.createElement('optgroup');
+            grpConfig.label = '🎯 Target SIMRS (Pemetaan)';
+            const printers = (currentConfig && currentConfig.printers) ? currentConfig.printers : {};
+            
+            for (const key in printers) {
+                const p = printers[key];
+                const opt = document.createElement('option');
+                opt.value = p.name;
+                const drvLabel = p.driver_type === 'tspl' ? 'TSPL' : (p.driver_type === 'escpos' ? 'ESC/POS' : p.driver_type);
+                opt.innerText = `${p.name} (${p.target || p.type} - ${drvLabel})`;
+                grpConfig.appendChild(opt);
+            }
+            if (grpConfig.children.length > 0) sel.appendChild(grpConfig);
+
+            // Group 2: Printer Fisik OS
+            const grpInstalled = document.createElement('optgroup');
+            grpInstalled.label = '🖨️ Printer Fisik Terdeteksi';
+            (installedPrinters || []).forEach(ip => {
+                const opt = document.createElement('option');
+                opt.value = ip.name;
+                opt.innerText = `🖨️ ${ip.name} ${ip.is_default ? '(Default)' : ''}`;
+                grpInstalled.appendChild(opt);
+            });
+            if (grpInstalled.children.length > 0) sel.appendChild(grpInstalled);
+
+            // Pilih target yang paling cocok otomatis jika ada
+            if (prevVal && Array.from(sel.options).some(o => o.value === prevVal)) {
+                sel.value = prevVal;
+            } else if (currentTemplate) {
+                const tmplId = (currentTemplate.id || '').toLowerCase();
+                const cat = (currentTemplate.category || '').toLowerCase();
+                let bestMatch = '';
+
+                if (cat === 'label' || tmplId.includes('label') || tmplId.includes('barcode')) {
+                    if (printers['LabelPasien']) bestMatch = 'LabelPasien';
+                    else if (printers['LabelFarmasi']) bestMatch = 'LabelFarmasi';
+                } else if (cat === 'gelang' || tmplId.includes('gelang')) {
+                    if (printers['Gelang']) bestMatch = 'Gelang';
+                    else if (printers['LabelPasien']) bestMatch = 'LabelPasien';
+                } else if (tmplId.includes('antrian')) {
+                    if (printers['CetakAntrian']) bestMatch = 'CetakAntrian';
+                } else if (tmplId.includes('kwitansi')) {
+                    if (printers['Kwitansi']) bestMatch = 'Kwitansi';
+                } else if (tmplId.includes('tracer') || tmplId.includes('bukti')) {
+                    if (printers['Tracer']) bestMatch = 'Tracer';
+                    else if (printers['BuktiRegistrasi']) bestMatch = 'BuktiRegistrasi';
+                }
+
+                if (bestMatch && Array.from(sel.options).some(o => o.value === bestMatch)) {
+                    sel.value = bestMatch;
+                }
+            }
+        }
+
         async function testPrintCurrentTemplate(isViewOnly) {
             if (!currentTemplate) return;
-            showToast(isViewOnly ? "Membuat preview PDF..." : "Mengirim test cetak ke printer...");
+            const targetSel = document.getElementById('selTestPrinterTarget');
+            const chosenTarget = (targetSel && targetSel.value) ? targetSel.value : 'CetakAntrian';
+
+            showToast(isViewOnly ? "Membuat preview PDF..." : `Mengirim uji cetak template ke '${chosenTarget}'...`);
             try {
                 let sampleData = {};
                 try { sampleData = JSON.parse(document.getElementById('sampleDataJson').value || '{}'); } catch(e) {}
@@ -2443,7 +2516,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         template_id: currentTemplate.id,
-                        printer_target: 'CetakAntrian',
+                        printer_target: chosenTarget,
                         data: sampleData,
                         view: isViewOnly
                     })
@@ -2452,7 +2525,7 @@
                 if (data.file_path) {
                     showToast("Dokumen PDF dibuat: " + data.file_path);
                 } else {
-                    showToast(data.message || "Test cetak selesai!");
+                    showToast(data.message || `Uji cetak ke '${chosenTarget}' berhasil!`);
                 }
             } catch (err) {
                 showToast("Error test cetak: " + err);

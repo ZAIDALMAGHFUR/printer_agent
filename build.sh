@@ -9,3 +9,4 @@ GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui -s -w" -o bin/smart-p
 
 echo "==> Done! Binaries generated in bin/"
 ls -lh bin/smart-print-agent*
+
