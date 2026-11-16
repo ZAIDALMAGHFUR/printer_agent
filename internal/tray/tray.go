@@ -348,7 +348,7 @@ func showContextMenu(hwnd syscall.Handle) {
 }
 
 func openDashboard() {
-	url := fmt.Sprintf("http://127.0.0.1:%d/settings", gPort)
+	url := fmt.Sprintf("http://127.0.0.1:%d/", gPort)
 	_ = exec.Command("cmd", "/c", "start", url).Start()
 }
 

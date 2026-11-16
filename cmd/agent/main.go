@@ -67,8 +67,12 @@ func main() {
 
 	// Web Dashboard Pengaturan Printer
 	dashboardHandler := web.GetStaticFileSystem()
-	mux.Handle("/settings/", http.StripPrefix("/settings", dashboardHandler))
-	mux.Handle("/settings", http.RedirectHandler("/settings/", http.StatusMovedPermanently))
+	mux.HandleFunc("/settings", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	})
+	mux.HandleFunc("/settings/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	})
 	mux.Handle("/", dashboardHandler)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", cfg.ServerPort)
