@@ -13,7 +13,7 @@ import (
 
 // AppConfig menyimpan seluruh konfigurasi aplikasi print agent
 type AppConfig struct {
-	ServerPort       int                             `json:"server_port"`        // Default: 1237
+	ServerPort       int                             `json:"server_port"`        // Default: 2349
 	HospitalName     string                          `json:"hospital_name"`      // Nama RS
 	Publisher        string                          `json:"publisher"`          // Publisher / Pengembang
 	AutoSavePDF      bool                            `json:"auto_save_pdf"`      // Jika printer mati/belum ada, auto save PDF
@@ -90,7 +90,7 @@ func (cm *ConfigManager) loadOrInit() {
 
 func defaultConfiguration() *AppConfig {
 	return &AppConfig{
-		ServerPort:       1237,
+		ServerPort:       2349,
 		HospitalName:     "RSU ASHAVIN",
 		Publisher:        "SIMRS Developer Team",
 		AutoSavePDF:      true,

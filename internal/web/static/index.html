@@ -381,7 +381,7 @@
                 </button>
                 <span class="badge">
                     <span class="badge-dot"></span>
-                    <span id="agentStatus">ONLINE - Port 1237</span>
+                    <span id="agentStatus">ONLINE - Port 2349</span>
                 </span>
             </div>
         </div>
@@ -1211,7 +1211,7 @@
             let placeholder = '-';
             if (p.type === 'relay') {
                 val = p.ip || (p.target && (p.target.startsWith('http') || p.target.includes(':')) ? p.target : '');
-                placeholder = 'http://192.168.1.50:1237';
+                placeholder = 'http://192.168.1.50:2349';
             } else if (p.type === 'socket') {
                 val = p.ip || (p.target && p.target.includes(':') ? p.target : '');
                 placeholder = '192.168.1.200:9100';
@@ -1256,7 +1256,7 @@
             if (type === 'relay') {
                 const oldIP = tr.querySelector('.row-ip') ? tr.querySelector('.row-ip').value : '';
                 const keepIP = (oldIP === '-') ? '' : oldIP;
-                ipCell.innerHTML = `<input type="text" class="row-ip" value="${keepIP}" placeholder="http://192.168.1.50:1237" title="Alamat Agent di PC Sebelah">`;
+                ipCell.innerHTML = `<input type="text" class="row-ip" value="${keepIP}" placeholder="http://192.168.1.50:2349" title="Alamat Agent di PC Sebelah">`;
                 const curTarget = tr.querySelector('.row-target') ? tr.querySelector('.row-target').value : '';
                 const keepTarget = (curTarget === 'AutoSavePDF') ? '' : curTarget;
                 targetCell.innerHTML = renderTargetInput({ type: 'relay', target: keepTarget });

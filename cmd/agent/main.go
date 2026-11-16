@@ -75,7 +75,7 @@ func main() {
 	})
 	mux.Handle("/", dashboardHandler)
 
-	addr := fmt.Sprintf("0.0.0.0:%d", cfg.ServerPort)
+	addr := fmt.Sprintf(":%d", cfg.ServerPort)
 
 	server := &http.Server{
 		Addr:         addr,

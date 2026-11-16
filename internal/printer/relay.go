@@ -31,9 +31,9 @@ func RelayPrintJob(relayTarget string, req model.PrintRequest, timeoutSec int) (
 	}
 
 	if !strings.HasPrefix(targetURL, "http://") && !strings.HasPrefix(targetURL, "https://") {
-		// Jika tidak ada port dan tidak ada slash, beri default port agent :1237
+		// Jika tidak ada port dan tidak ada slash, beri default port agent :2349
 		if !strings.Contains(targetURL, ":") && !strings.Contains(targetURL, "/") {
-			targetURL = targetURL + ":1237"
+			targetURL = targetURL + ":2349"
 		}
 		targetURL = "http://" + targetURL
 	}
