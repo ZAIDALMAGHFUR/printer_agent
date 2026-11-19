@@ -20,6 +20,12 @@ import (
 )
 
 func main() {
+	// 0. Setup log file untuk mencatat aktivitas daemon
+	if logFile, err := os.OpenFile("smart-print-agent.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {
+		log.SetOutput(logFile)
+		defer logFile.Close()
+	}
+
 	// 1. Inisialisasi Config Manager
 	cfgMgr := config.GetManager("configs/config.json")
 	cfg := cfgMgr.GetConfig()
@@ -84,8 +90,8 @@ func main() {
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      mux,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
 	// Tangani shutdown sinyal (CTRL+C / SIGTERM)

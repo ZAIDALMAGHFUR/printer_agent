@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -29,36 +30,7 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 	start := time.Now()
 	cfg := m.cfgMgr.GetConfig()
 
-	// 0. Proses template: Cek apakah ada di TemplateManager dinamis (JSON) terlebih dahulu
-	var generatedPDFPath string
-	tm := GetTemplateManager()
-	if req.Template != "" {
-		if tmpl, ok := tm.GetTemplate(req.Template); ok {
-			pdfPath, err := tm.RenderToPDF(tmpl, req.Data, cfg.PDFSaveDir, req.RequestID)
-			if err == nil {
-				generatedPDFPath = pdfPath
-			}
-		}
-		if len(req.Konten) == 0 {
-			req.Konten = ApplyTemplate(req.Template, req.Data)
-		}
-	}
-
-	// 0b. Jika ada PDFURL dan belum ada generatedPDFPath, unduh PDF dari URL backend!
-	if req.PDFURL != "" && generatedPDFPath == "" {
-		docName := req.DocumentType
-		if docName == "" {
-			docName = req.PrinterTarget
-		}
-		downloadedPath, err := m.downloadPDF(req.PDFURL, cfg.PDFSaveDir, req.RequestID, docName)
-		if err == nil {
-			generatedPDFPath = downloadedPath
-		} else {
-			log.Printf("[DOWNLOAD-PDF] Gagal mengunduh PDF dari %s: %v", req.PDFURL, err)
-		}
-	}
-
-	// 1. Dapatkan mapping printer
+	// 1. Dapatkan mapping printer terlebih dahulu
 	mapping, exists := m.cfgMgr.GetPrinterMapping(req.PrinterTarget)
 	if !exists {
 		// Jika target tidak terdaftar di config, cek apakah target/printer_name adalah nama printer fisik langsung
@@ -85,6 +57,49 @@ func (m *Manager) Execute(req model.PrintRequest) (*model.PrintResponse, error) 
 		// Override target printer fisik jika request secara eksplisit menyertakan printer_name
 		mapping.Target = req.PrinterName
 		mapping.DriverType = DetectDriver(req.PrinterTarget, req.PrinterName, mapping.DriverType)
+	}
+
+	// FLEKSIBILITAS PEMETAAN TEMPLATE DARI DASHBOARD PRINTER AGENT:
+	// Dashboard printer agent adalah otoritas utama (authoritative) penentu desain template.
+	// 1. Jika printer target terdaftar di dashboard pemetaan printer agen (exists == true),
+	//    maka template dari dashboard SELALU DIGUNAKAN (meng-override nilai template bawaan dari SIMRS).
+	//    Hal ini memungkinkan pengguna/admin bebas mengganti template cetak (misal: gelang laki-laki vs gelang 280mm,
+	//    atau label 1 kolom vs 2 kolom, atau template baru) langsung dari dropdown dashboard tanpa menyentuh kode SIMRS.
+	// 2. Jika di dashboard disetel "-- Tanpa Template (RAW) --" (mapping.Template == ""),
+	//    maka req.Template dikosongkan agar agen langsung mencetak dokumen asli (DomPDF via pdf_url atau RAW).
+	// 3. Jika printer target belum terpetakan di config (exists == false) dan SIMRS menyertakan template,
+	//    agen tetap menggunakan req.Template dari SIMRS sebagai fallback.
+	if exists {
+		req.Template = mapping.Template
+	}
+
+	// 0. Proses template: Cek apakah ada di TemplateManager dinamis (JSON) terlebih dahulu
+	var generatedPDFPath string
+	tm := GetTemplateManager()
+	if req.Template != "" && (len(req.Data) > 0 || req.PDFURL == "") {
+		if tmpl, ok := tm.GetTemplate(req.Template); ok {
+			pdfPath, err := tm.RenderToPDF(tmpl, req.Data, cfg.PDFSaveDir, req.RequestID)
+			if err == nil {
+				generatedPDFPath = pdfPath
+			}
+		}
+		if len(req.Konten) == 0 {
+			req.Konten = ApplyTemplate(req.Template, req.Data)
+		}
+	}
+
+	// 0b. Jika ada PDFURL dan belum ada generatedPDFPath, unduh PDF dari URL backend!
+	if req.PDFURL != "" && generatedPDFPath == "" {
+		docName := req.DocumentType
+		if docName == "" {
+			docName = req.PrinterTarget
+		}
+		downloadedPath, err := m.downloadPDF(req.PDFURL, cfg.PDFSaveDir, req.RequestID, docName)
+		if err == nil {
+			generatedPDFPath = downloadedPath
+		} else {
+			log.Printf("[DOWNLOAD-PDF] Gagal mengunduh PDF dari %s: %v", req.PDFURL, err)
+		}
 	}
 
 	// 2. Jika opsi View / Preview diminta atau printer bertipe Virtual PDF
@@ -443,13 +458,20 @@ func (m *Manager) downloadPDF(pdfURL, saveDir, reqID, docName string) (string, e
 		reqID = fmt.Sprintf("REQ-%d", time.Now().UnixNano()%1000000)
 	}
 
+	// 1. Bersihkan parameter format=json jika tidak sengaja terbawa di URL agar mengunduh binary PDF murni
+	if strings.Contains(pdfURL, "format=") {
+		pdfURL = strings.ReplaceAll(pdfURL, "format=json&", "")
+		pdfURL = strings.ReplaceAll(pdfURL, "&format=json", "")
+		pdfURL = strings.ReplaceAll(pdfURL, "?format=json", "")
+	}
+
 	now := time.Now()
 	targetDir := filepath.Join(saveDir, now.Format("2006-01-02"))
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
 		return "", fmt.Errorf("gagal membuat direktori PDF: %w", err)
 	}
 
-	client := &http.Client{Timeout: 15 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Get(pdfURL)
 	if err != nil {
 		return "", fmt.Errorf("gagal mengambil file PDF dari %s: %w", pdfURL, err)
@@ -460,21 +482,29 @@ func (m *Manager) downloadPDF(pdfURL, saveDir, reqID, docName string) (string, e
 		return "", fmt.Errorf("server mengembalikan status HTTP %d saat mengunduh PDF", resp.StatusCode)
 	}
 
+	// 2. Baca seluruh data respon untuk validasi magic bytes PDF
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("gagal membaca data respon PDF: %w", err)
+	}
+
+	// 3. Validasi apakah file benar-benar berformat PDF (dimulai dengan %PDF)
+	if len(bodyBytes) < 4 || !bytes.HasPrefix(bodyBytes, []byte("%PDF")) {
+		preview := string(bodyBytes)
+		if len(preview) > 300 {
+			preview = preview[:300] + "..."
+		}
+		return "", fmt.Errorf("respon dari %s bukan file PDF valid (panjang: %d bytes, konten: %s)", pdfURL, len(bodyBytes), preview)
+	}
+
 	fileName := fmt.Sprintf("%s_%s_%s.pdf", docName, reqID, now.Format("150405"))
 	fullPath := filepath.Join(targetDir, fileName)
 
-	out, err := os.Create(fullPath)
-	if err != nil {
-		return "", fmt.Errorf("gagal membuat file PDF tujuan: %w", err)
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("gagal menyimpan data PDF: %w", err)
+	if err := os.WriteFile(fullPath, bodyBytes, 0644); err != nil {
+		return "", fmt.Errorf("gagal menyimpan file PDF: %w", err)
 	}
 
-	log.Printf("[DOWNLOAD-PDF] Sukses mengunduh dan menyimpan PDF ke: %s", fullPath)
+	log.Printf("[DOWNLOAD-PDF] Sukses mengunduh dan menyimpan PDF valid (%d bytes) ke: %s", len(bodyBytes), fullPath)
 	return fullPath, nil
 }
 

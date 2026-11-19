@@ -23,8 +23,84 @@ func ApplyTemplate(templateName string, data map[string]interface{}) []model.Pri
 	case "label_pasien", "label", "gelang":
 		return buildLabelPasienTemplate(data)
 	default:
+		// Jika template ada di TemplateManager (JSON template dinamis), ubah elemen visual menjadi PrintLine
+		if tm := GetTemplateManager(); tm != nil {
+			if tmpl, ok := tm.GetTemplate(templateName); ok {
+				return tmplToPrintLines(tmpl, data)
+			}
+		}
 		return nil
 	}
+}
+
+// tmplToPrintLines mengubah elemen visual template JSON menjadi daftar PrintLine terstruktur
+func tmplToPrintLines(tmpl *model.TemplateDefinition, d map[string]interface{}) []model.PrintLine {
+	if tmpl == nil || len(tmpl.Elements) == 0 {
+		return nil
+	}
+	var lines []model.PrintLine
+
+	interpolate := func(s string) string {
+		if !strings.Contains(s, "{{.") {
+			return s
+		}
+		res := s
+		for k, v := range d {
+			placeholder := fmt.Sprintf("{{.%s}}", k)
+			res = strings.ReplaceAll(res, placeholder, fmt.Sprintf("%v", v))
+		}
+		return res
+	}
+
+	for _, el := range tmpl.Elements {
+		switch strings.ToLower(el.Type) {
+		case "divider", "line":
+			style := el.Style
+			if style == "" {
+				style = "solid"
+			}
+			lines = append(lines, model.PrintLine{Type: "divider", Style: style})
+		case "barcode":
+			content := interpolate(el.Content)
+			if content != "" {
+				h := int(el.Height)
+				if h <= 0 {
+					h = 40
+				}
+				lines = append(lines, model.PrintLine{Type: "barcode", Text: content, Height: h})
+			}
+		case "qrcode":
+			content := interpolate(el.Content)
+			if content != "" {
+				lines = append(lines, model.PrintLine{Type: "qrcode", Text: content})
+			}
+		case "image":
+			if el.Src != "" {
+				lines = append(lines, model.PrintLine{Type: "image", Data: el.Src, Align: el.Align})
+			}
+		default: // "text"
+			content := interpolate(el.Content)
+			if content != "" {
+				size := "normal"
+				if el.FontSize >= 16 {
+					size = "extra_large"
+				} else if el.FontSize >= 13 {
+					size = "large"
+				} else if el.FontSize >= 10.5 {
+					size = "medium"
+				} else if el.FontSize <= 8 {
+					size = "small"
+				}
+				lines = append(lines, model.PrintLine{
+					Text:  content,
+					Align: el.Align,
+					Bold:  strings.EqualFold(el.FontWeight, "bold"),
+					Size:  size,
+				})
+			}
+		}
+	}
+	return lines
 }
 
 // buildAntrianTemplate menyusun struk antrian dengan tipografi serif elegan dan spasi presisi

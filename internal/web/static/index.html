@@ -49,6 +49,55 @@
         select, input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
         select:focus, input:focus, textarea:focus { outline: none; border-color: var(--primary); }
 
+        /* Responsive Table Container with Smooth Horizontal Scroll */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #ffffff;
+            margin: 12px 0 0 0;
+            padding: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-bottom-left-radius: 7px;
+            border-bottom-right-radius: 7px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .table-routing {
+            min-width: 1500px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-routing th,
+        .table-routing td {
+            padding: 10px 12px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .table-routing td input[type="text"] {
+            box-sizing: border-box;
+        }
+
         /* Buttons */
         .btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
         .btn-primary { background: var(--primary); color: #fff; }
@@ -398,28 +447,36 @@
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <div class="card-title">Pemetaan Printer Ruangan (Printer Routing)</div>
+                        <div class="card-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span>Pemetaan Printer Ruangan (Printer Routing)</span>
+                            <span style="font-size: 11px; font-weight: 600; background: #e0f2fe; color: #0284c7; padding: 2px 10px; border-radius: 20px; border: 1px solid #bae6fd;">
+                                ↔ Geser tabel horizontal untuk melihat semua kolom
+                            </span>
+                        </div>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
                             Pilih printer target untuk setiap jenis cetakan. Mendukung Universal Spooler (Zebra, TSC, Epson, HP, Canon).
                         </p>
                     </div>
                     <button class="btn btn-outline btn-sm" onclick="addNewRow()">+ Tambah Pemetaan</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 18%;">Target SIMRS</th>
-                            <th style="width: 16%;">Tipe Koneksi</th>
-                            <th style="width: 20%;">Alamat IP / Host</th>
-                            <th style="width: 22%;">Printer Fisik Target</th>
-                            <th style="width: 16%;">Metode Cetak</th>
-                            <th style="width: 8%; text-align: center;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="printerTableBody">
-                        <tr><td colspan="6" style="text-align: center;">Memuat konfigurasi...</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table-routing">
+                        <thead>
+                            <tr>
+                                <th style="width: 170px; min-width: 170px;">Target SIMRS</th>
+                                <th style="width: 180px; min-width: 180px;">Tipe Koneksi</th>
+                                <th style="width: 190px; min-width: 190px;">Alamat IP / Host</th>
+                                <th style="width: 270px; min-width: 270px;">Printer Fisik Target</th>
+                                <th style="width: 280px; min-width: 280px;">Metode Cetak</th>
+                                <th style="width: 280px; min-width: 280px;">Desain Template</th>
+                                <th style="width: 130px; min-width: 130px; text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printerTableBody">
+                            <tr><td colspan="7" style="text-align: center;">Memuat konfigurasi...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Konfigurasi Global -->
@@ -849,6 +906,10 @@
                 this.syncValue();
             }
 
+            refresh() {
+                this.buildOptions();
+            }
+
             selectOption(value) {
                 this.select.value = value;
                 this.syncValue();
@@ -895,23 +956,35 @@
                 const tr = this.wrap.closest('tr');
                 if (tr) tr.classList.add('c-select-active-row');
 
-                // Check vertical room
+                // Dynamic viewport positioning (fixed so it escapes any table overflow clipping)
                 const rect = this.trigger.getBoundingClientRect();
                 const spaceBelow = window.innerHeight - rect.bottom;
-                if (spaceBelow < 250 && rect.top > 250) {
-                    this.dropdown.classList.add('c-select-dropup');
+                const spaceAbove = rect.top;
+                const isDropup = spaceBelow < 250 && spaceAbove > spaceBelow;
+
+                this.dropdown.style.position = 'fixed';
+                this.dropdown.style.zIndex = '999999';
+
+                const targetWidth = Math.min(Math.max(rect.width, 260), 440);
+                this.dropdown.style.width = targetWidth + 'px';
+
+                // Check horizontal bounds
+                if (rect.left + targetWidth > window.innerWidth - 12) {
+                    this.dropdown.style.left = Math.max(12, window.innerWidth - targetWidth - 12) + 'px';
+                    this.dropdown.style.right = 'auto';
                 } else {
-                    this.dropdown.classList.remove('c-select-dropup');
+                    this.dropdown.style.left = Math.max(12, rect.left) + 'px';
+                    this.dropdown.style.right = 'auto';
                 }
 
-                // Check horizontal room
-                const dropWidth = 320;
-                if (rect.left + dropWidth > window.innerWidth - 12) {
-                    this.dropdown.style.left = 'auto';
-                    this.dropdown.style.right = '0';
+                if (isDropup) {
+                    this.dropdown.classList.add('c-select-dropup');
+                    this.dropdown.style.top = 'auto';
+                    this.dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
                 } else {
-                    this.dropdown.style.left = '0';
-                    this.dropdown.style.right = 'auto';
+                    this.dropdown.classList.remove('c-select-dropup');
+                    this.dropdown.style.top = (rect.bottom + 4) + 'px';
+                    this.dropdown.style.bottom = 'auto';
                 }
 
                 if (this.searchBox.style.display !== 'none') {
@@ -931,6 +1004,15 @@
                 this.isOpen = false;
                 this.wrap.classList.remove('open');
                 this.dropdown.classList.remove('c-select-dropup');
+
+                // Reset fixed positioning styles
+                this.dropdown.style.position = '';
+                this.dropdown.style.top = '';
+                this.dropdown.style.bottom = '';
+                this.dropdown.style.left = '';
+                this.dropdown.style.right = '';
+                this.dropdown.style.width = '';
+                this.dropdown.style.zIndex = '';
 
                 const tr = this.wrap.closest('tr');
                 if (tr) tr.classList.remove('c-select-active-row');
@@ -1073,9 +1155,17 @@
 
         // Global click listener to close dropdowns
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.c-select-wrap')) {
+            if (!e.target.closest('.c-select-wrap') && !e.target.closest('.c-select-dropdown')) {
                 ModernSelect.closeAll();
             }
+        });
+
+        // Close on scroll or resize so floating dropdown doesn't drift
+        window.addEventListener('scroll', () => {
+            ModernSelect.closeAll();
+        }, true);
+        window.addEventListener('resize', () => {
+            ModernSelect.closeAll();
         });
 
         // Global mutation observer for auto-enhancing dynamically injected selects
@@ -1164,6 +1254,8 @@
                 installedPrinters = await resPrinters.json();
                 updatePrinterDatalist();
 
+                await loadTemplatesList();
+
                 const resCfg = await fetch('/api/config');
                 currentConfig = await resCfg.json();
                 document.getElementById('cfgHospital').value = currentConfig.hospital_name || '';
@@ -1175,7 +1267,6 @@
                 renderPrinterTable(currentConfig.printers);
                 updateTestPrinterSelect();
                 loadHistory();
-                await loadTemplatesList();
                 initPaperResizeHandles();
                 ModernSelect.enhanceAll(document);
             } catch (err) {
@@ -1198,7 +1289,7 @@
             tbody.innerHTML = '';
             const keys = Object.keys(printers || {});
             if (keys.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Belum ada pemetaan printer.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Belum ada pemetaan printer.</td></tr>';
                 return;
             }
 
@@ -1206,8 +1297,8 @@
                 const p = printers[key];
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><input type="text" class="row-name" value="${p.name}"></td>
-                    <td>
+                    <td style="width: 170px; min-width: 170px;"><input type="text" class="row-name" value="${p.name}"></td>
+                    <td style="width: 180px; min-width: 180px;">
                         <select class="row-type" onchange="onTypeChange(this)">
                             <option value="usb" ${p.type === 'usb' ? 'selected' : ''}>🔌 Local USB</option>
                             <option value="relay" ${p.type === 'relay' ? 'selected' : ''}>🔄 Relay PC Sebelah</option>
@@ -1215,9 +1306,9 @@
                             <option value="pdf" ${p.type === 'pdf' ? 'selected' : ''}>📄 Virtual PDF</option>
                         </select>
                     </td>
-                    <td>${renderIPInput(p)}</td>
-                    <td>${renderTargetInput(p)}</td>
-                    <td>
+                    <td style="width: 190px; min-width: 190px;">${renderIPInput(p)}</td>
+                    <td style="width: 270px; min-width: 270px;">${renderTargetInput(p)}</td>
+                    <td style="width: 280px; min-width: 280px;">
                         <select class="row-driver">
                             <option value="auto" ${(!p.driver_type || p.driver_type === 'auto') ? 'selected' : ''}>✨ Universal (Driver Windows)</option>
                             <option value="escpos" ${p.driver_type === 'escpos' ? 'selected' : ''}>🧾 RAW Struk Thermal (ESC/POS 80mm)</option>
@@ -1226,14 +1317,62 @@
                             <option value="generic" ${p.driver_type === 'generic' ? 'selected' : ''}>📄 Dokumen A4 / Dot Matrix (Epson LX)</option>
                         </select>
                     </td>
-                    <td style="text-align: center;">
+                    <td style="width: 280px; min-width: 280px;">
+                        ${renderTemplateSelect(p.template)}
+                    </td>
+                    <td style="width: 130px; min-width: 130px; text-align: center; white-space: nowrap;">
                         <button class="btn btn-outline btn-sm" onclick="testPrint('${p.name}')">Tes</button>
-                        <button class="btn btn-outline btn-sm btn-danger" style="margin-left: 4px;" onclick="removeRow(this)">Hapus</button>
+                        <button class="btn btn-outline btn-sm btn-danger" style="margin-left: 6px;" onclick="removeRow(this)">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
             ModernSelect.enhanceAll(tbody);
+        }
+
+        function renderTemplateSelect(selectedId) {
+            let options = '<option value="">-- Tanpa Template (RAW) --</option>';
+            if (allTemplates && allTemplates.length > 0) {
+                options += allTemplates.map(t => {
+                    const isStruk = (t.paper && t.paper.width_mm >= 70);
+                    let icon = '🏷️';
+                    if (t.category === 'struk' || isStruk) icon = '🧾';
+                    else if (t.category === 'gelang') icon = '🎗️';
+                    else if (t.category === 'kartu') icon = '🪪';
+                    const paperText = t.paper ? ` (${t.paper.width_mm}x${t.paper.height_mm}mm)` : '';
+                    return `<option value="${t.id}" ${t.id === selectedId ? 'selected' : ''}>${icon} ${t.name || t.id}${paperText}</option>`;
+                }).join('');
+            }
+            return `
+                <select class="row-template" onchange="onTemplateChange(this)" title="Pilih desain template visual untuk printer ini">
+                    ${options}
+                </select>
+            `;
+        }
+
+        function onTemplateChange(sel) {
+            const tr = sel.closest('tr');
+            if (!tr) return;
+            const tmplId = sel.value;
+            if (!tmplId) return;
+            const tmpl = (allTemplates || []).find(t => t.id === tmplId);
+            if (!tmpl) return;
+            const driverSel = tr.querySelector('.row-driver');
+            if (!driverSel) return;
+
+            // Auto-rekomendasi metode cetak jika memilih template tertentu
+            if (tmpl.paper && tmpl.paper.columns === 2) {
+                driverSel.value = 'tspl_2col';
+            } else if (tmpl.category === 'label' || tmpl.category === 'gelang' || tmplId.includes('label') || tmplId.includes('gelang')) {
+                driverSel.value = 'tspl';
+            } else if (tmpl.category === 'struk' || tmplId.includes('antrian') || (tmpl.paper && tmpl.paper.width_mm <= 80 && tmpl.paper.width_mm >= 70)) {
+                driverSel.value = 'escpos';
+            } else if (tmpl.category === 'kartu' || (tmpl.paper && tmpl.paper.width_mm > 80)) {
+                driverSel.value = 'generic';
+            }
+            if (driverSel._modernSelect) {
+                driverSel._modernSelect.syncValue();
+            }
         }
 
         function renderIPInput(p) {
@@ -1268,9 +1407,9 @@
             `).join('');
 
             return `
-                <div style="display: flex; gap: 4px; width: 100%; align-items: center;">
-                    <input type="text" class="row-target" list="installedPrintersDatalist" value="${targetVal}" placeholder="cth: EPSON LX-310" style="flex: 1;" title="Nama printer fisik di OS atau PC target">
-                    <select class="no-modern-select" style="width: auto; max-width: 90px; padding: 7px 6px; font-size: 11px; background: #f8fafc; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; cursor: pointer;" title="Pilih printer fisik terdeteksi" onchange="if(this.value){ const inp = this.previousElementSibling; inp.value = this.value; this.value = ''; }">
+                <div style="display: flex; gap: 6px; width: 100%; align-items: center;">
+                    <input type="text" class="row-target" list="installedPrintersDatalist" value="${targetVal}" placeholder="cth: EPSON LX-310" style="flex: 1; min-width: 140px;" title="Nama printer fisik di OS atau PC target">
+                    <select class="no-modern-select" style="width: auto; min-width: 80px; flex-shrink: 0; padding: 7px 8px; font-size: 11px; background: #f8fafc; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; cursor: pointer;" title="Pilih printer fisik terdeteksi" onchange="if(this.value){ const inp = this.previousElementSibling; inp.value = this.value; this.value = ''; }">
                         <option value="">▼ Pilih</option>
                         ${options}
                     </select>
@@ -1313,8 +1452,8 @@
             const tbody = document.getElementById('printerTableBody');
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><input type="text" class="row-name" placeholder="TargetBaru (cth: BuktiRegistrasi)"></td>
-                <td>
+                <td style="width: 170px; min-width: 170px;"><input type="text" class="row-name" placeholder="TargetBaru (cth: BuktiRegistrasi)"></td>
+                <td style="width: 180px; min-width: 180px;">
                     <select class="row-type" onchange="onTypeChange(this)">
                         <option value="usb">🔌 Local USB</option>
                         <option value="relay">🔄 Relay PC Sebelah</option>
@@ -1322,9 +1461,9 @@
                         <option value="pdf">📄 Virtual PDF</option>
                     </select>
                 </td>
-                <td>${renderIPInput({ type: 'usb' })}</td>
-                <td>${renderTargetInput({ type: 'usb', target: '' })}</td>
-                <td>
+                <td style="width: 190px; min-width: 190px;">${renderIPInput({ type: 'usb' })}</td>
+                <td style="width: 270px; min-width: 270px;">${renderTargetInput({ type: 'usb', target: '' })}</td>
+                <td style="width: 280px; min-width: 280px;">
                     <select class="row-driver">
                         <option value="auto" selected>✨ Universal (Driver Windows)</option>
                         <option value="escpos">🧾 RAW Struk Thermal (ESC/POS 80mm)</option>
@@ -1333,7 +1472,10 @@
                         <option value="generic">📄 Dokumen A4 / Dot Matrix (Epson LX)</option>
                     </select>
                 </td>
-                <td style="text-align: center;">
+                <td style="width: 280px; min-width: 280px;">
+                    ${renderTemplateSelect('')}
+                </td>
+                <td style="width: 130px; min-width: 130px; text-align: center; white-space: nowrap;">
                     <button class="btn btn-outline btn-sm btn-danger" onclick="removeRow(this)">Hapus</button>
                 </td>
             `;
@@ -1356,6 +1498,8 @@
                 const targetInput = tr.querySelector('.row-target');
                 const targetVal = targetInput ? targetInput.value.trim() : '';
                 const driver = tr.querySelector('.row-driver').value;
+                const templateSel = tr.querySelector('.row-template');
+                const templateVal = templateSel ? templateSel.value : '';
 
                 let paperSize = 'A4';
                 if (driver === 'escpos') {
@@ -1373,7 +1517,8 @@
                     target: targetVal,
                     driver_type: (driver === 'tspl_2col') ? 'tspl' : driver,
                     auto_cut: driver === 'escpos',
-                    paper_size: paperSize
+                    paper_size: paperSize,
+                    template: templateVal
                 };
             });
 
@@ -1457,9 +1602,36 @@
                         highlightActiveCard(currentTemplate.id);
                     }
                 }
+                refreshTemplateDropdowns();
             } catch (err) {
                 showToast("Gagal memuat template: " + err);
             }
+        }
+
+        function refreshTemplateDropdowns() {
+            const rows = document.querySelectorAll('#printerTableBody tr');
+            rows.forEach(tr => {
+                const sel = tr.querySelector('.row-template');
+                if (sel) {
+                    const currentVal = sel.value;
+                    let options = '<option value="">-- Tanpa Template (RAW) --</option>';
+                    if (allTemplates && allTemplates.length > 0) {
+                        options += allTemplates.map(t => {
+                            const isStruk = (t.paper && t.paper.width_mm >= 70);
+                            let icon = '🏷️';
+                            if (t.category === 'struk' || isStruk) icon = '🧾';
+                            else if (t.category === 'gelang') icon = '🎗️';
+                            else if (t.category === 'kartu') icon = '🪪';
+                            const paperText = t.paper ? ` (${t.paper.width_mm}x${t.paper.height_mm}mm)` : '';
+                            return `<option value="${t.id}" ${t.id === currentVal ? 'selected' : ''}>${icon} ${t.name || t.id}${paperText}</option>`;
+                        }).join('');
+                    }
+                    sel.innerHTML = options;
+                    if (sel._modernSelect) {
+                        sel._modernSelect.refresh();
+                    }
+                }
+            });
         }
 
         async function restoreDefaultTemplates() {
@@ -2456,7 +2628,8 @@
                 const opt = document.createElement('option');
                 opt.value = p.name;
                 const drvLabel = p.driver_type === 'tspl' ? 'TSPL' : (p.driver_type === 'escpos' ? 'ESC/POS' : p.driver_type);
-                opt.innerText = `${p.name} (${p.target || p.type} - ${drvLabel})`;
+                const tmplLabel = p.template ? ` [Desain: ${p.template}]` : '';
+                opt.innerText = `${p.name} (${p.target || p.type} - ${drvLabel})${tmplLabel}`;
                 grpConfig.appendChild(opt);
             }
             if (grpConfig.children.length > 0) sel.appendChild(grpConfig);
@@ -2480,19 +2653,29 @@
                 const cat = (currentTemplate.category || '').toLowerCase();
                 let bestMatch = '';
 
-                if (cat === 'label' || tmplId.includes('label') || tmplId.includes('barcode')) {
-                    if (printers['LabelPasien']) bestMatch = 'LabelPasien';
-                    else if (printers['LabelFarmasi']) bestMatch = 'LabelFarmasi';
-                } else if (cat === 'gelang' || tmplId.includes('gelang')) {
-                    if (printers['Gelang']) bestMatch = 'Gelang';
-                    else if (printers['LabelPasien']) bestMatch = 'LabelPasien';
-                } else if (tmplId.includes('antrian')) {
-                    if (printers['CetakAntrian']) bestMatch = 'CetakAntrian';
-                } else if (tmplId.includes('kwitansi')) {
-                    if (printers['Kwitansi']) bestMatch = 'Kwitansi';
-                } else if (tmplId.includes('tracer') || tmplId.includes('bukti')) {
-                    if (printers['Tracer']) bestMatch = 'Tracer';
-                    else if (printers['BuktiRegistrasi']) bestMatch = 'BuktiRegistrasi';
+                // Cek apakah ada printer pemetaan yang memetakan template ini secara eksplisit
+                for (const k in printers) {
+                    if (printers[k].template === currentTemplate.id) {
+                        bestMatch = k;
+                        break;
+                    }
+                }
+
+                if (!bestMatch) {
+                    if (cat === 'label' || tmplId.includes('label') || tmplId.includes('barcode')) {
+                        if (printers['LabelPasien']) bestMatch = 'LabelPasien';
+                        else if (printers['LabelFarmasi']) bestMatch = 'LabelFarmasi';
+                    } else if (cat === 'gelang' || tmplId.includes('gelang')) {
+                        if (printers['Gelang']) bestMatch = 'Gelang';
+                        else if (printers['LabelPasien']) bestMatch = 'LabelPasien';
+                    } else if (tmplId.includes('antrian')) {
+                        if (printers['CetakAntrian']) bestMatch = 'CetakAntrian';
+                    } else if (tmplId.includes('kwitansi')) {
+                        if (printers['Kwitansi']) bestMatch = 'Kwitansi';
+                    } else if (tmplId.includes('tracer') || tmplId.includes('bukti')) {
+                        if (printers['Tracer']) bestMatch = 'Tracer';
+                        else if (printers['BuktiRegistrasi']) bestMatch = 'BuktiRegistrasi';
+                    }
                 }
 
                 if (bestMatch && Array.from(sel.options).some(o => o.value === bestMatch)) {

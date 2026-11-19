@@ -235,6 +235,27 @@ func (h *APIHandler) HandleTestPrint(w http.ResponseWriter, r *http.Request) {
 	req.RequestID = fmt.Sprintf("TEST-%d", time.Now().Unix()%10000)
 	req.PrinterTarget = target
 
+	// Jika printer target memiliki pemetaan template visual, uji langsung menggunakan template tersebut
+	if mapping.Template != "" {
+		if tmpl, ok := printer.GetTemplateManager().GetTemplate(mapping.Template); ok {
+			sampleData := tmpl.SampleData
+			if sampleData == nil {
+				sampleData = make(map[string]interface{})
+			}
+			req.DocumentType = tmpl.ID
+			req.Template = tmpl.ID
+			req.Data = sampleData
+			resp, err := h.manager.Execute(req)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(map[string]interface{}{"status": "error", "message": err.Error()})
+				return
+			}
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+	}
+
 	if strings.ToLower(mapping.DriverType) == "tspl" || strings.HasPrefix(strings.ToLower(mapping.DriverType), "tspl") {
 		// Test Label Barcode
 		req.DocumentType = "test_barcode"

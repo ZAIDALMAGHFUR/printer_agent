@@ -15,8 +15,7 @@
       "target": "AutoSavePDF",
       "driver_type": "generic",
       "paper_size": "A4",
-      "auto_cut": false,
-      "description": "Dokumen rincian biaya / billing A4"
+      "auto_cut": false
     },
     "BuktiRegistrasi": {
       "name": "BuktiRegistrasi",
@@ -25,7 +24,7 @@
       "driver_type": "generic",
       "paper_size": "A4",
       "auto_cut": false,
-      "description": "Printer dot-matrix bukti pendaftaran / registrasi (Epson LX-310)"
+      "template": "bukti_pendaftaran"
     },
     "CetakAntrian": {
       "name": "CetakAntrian",
@@ -34,7 +33,16 @@
       "driver_type": "escpos",
       "paper_size": "80mm",
       "auto_cut": true,
-      "description": "Printer antrian loket / kiosk (Epson TM-T82X)"
+      "template": "antrian"
+    },
+    "AntrianFarmasi": {
+      "name": "AntrianFarmasi",
+      "type": "usb",
+      "target": "EPSON TM-T82X Receipt",
+      "driver_type": "escpos",
+      "paper_size": "80mm",
+      "auto_cut": true,
+      "template": "antrian_farmasi"
     },
     "CetakSep": {
       "name": "CetakSep",
@@ -42,26 +50,60 @@
       "target": "AutoSavePDF",
       "driver_type": "generic",
       "paper_size": "A4",
+      "auto_cut": false
+    },
+    "GelangPasien": {
+      "name": "GelangPasien",
+      "type": "usb",
+      "target": "TSC TTP-244 Pro",
+      "driver_type": "tspl",
+      "paper_size": "50x30mm",
       "auto_cut": false,
-      "description": "Surat Eligibilitas Peserta (SEP BPJS)"
+      "template": "gelang_pasien_laki"
+    },
+    "KartuPasien": {
+      "name": "KartuPasien",
+      "type": "usb",
+      "target": "EPSON L3210 Series",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false,
+      "template": "kartu_pasien"
     },
     "Kwitansi": {
       "name": "Kwitansi",
-      "type": "usb",
-      "target": "EPSON TM-T82X Receipt",
-      "driver_type": "escpos",
-      "paper_size": "80mm",
-      "auto_cut": true,
-      "description": "Printer kwitansi kasir"
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false
     },
     "LabelFarmasi": {
       "name": "LabelFarmasi",
       "type": "usb",
       "target": "TSC TTP-244 Pro",
       "driver_type": "tspl",
-      "paper_size": "50x30mm",
+      "paper_size": "60x40mm",
       "auto_cut": false,
-      "description": "Printer barcode etiket obat farmasi (TSC)"
+      "template": "label_putih"
+    },
+    "LabelPutih": {
+      "name": "LabelPutih",
+      "type": "usb",
+      "target": "TSC TTP-244 Pro",
+      "driver_type": "tspl",
+      "paper_size": "60x40mm",
+      "auto_cut": false,
+      "template": "label_putih"
+    },
+    "LabelBiru": {
+      "name": "LabelBiru",
+      "type": "usb",
+      "target": "TSC TTP-244 Pro",
+      "driver_type": "tspl",
+      "paper_size": "60x40mm",
+      "auto_cut": false,
+      "template": "label_biru"
     },
     "LabelPasien": {
       "name": "LabelPasien",
@@ -70,7 +112,48 @@
       "driver_type": "tspl",
       "paper_size": "75x20mm_2col",
       "auto_cut": false,
-      "description": "Printer barcode identitas pasien (2 kolom kanan-kiri)"
+      "template": "label_pasien_2kolom"
+    },
+    "TracerPasien": {
+      "name": "TracerPasien",
+      "type": "usb",
+      "target": "EPSON LX-310",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false,
+      "template": "tracer"
+    },
+    "OrderBarang": {
+      "name": "OrderBarang",
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false
+    },
+    "KirimBarang": {
+      "name": "KirimBarang",
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false
+    },
+    "RincianBiaya": {
+      "name": "RincianBiaya",
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false
+    },
+    "SetorKasir": {
+      "name": "SetorKasir",
+      "type": "pdf",
+      "target": "AutoSavePDF",
+      "driver_type": "generic",
+      "paper_size": "A4",
+      "auto_cut": false
     }
   }
 }

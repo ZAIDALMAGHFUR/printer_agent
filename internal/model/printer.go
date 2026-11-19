@@ -19,6 +19,7 @@ type PrinterMapping struct {
 	DriverType  string      `json:"driver_type"`           // escpos (thermal), tspl (tsc barcode), generic (a4)
 	PaperSize   string      `json:"paper_size,omitempty"`  // 80mm, 58mm, 50x30mm, A4
 	AutoCut     bool        `json:"auto_cut"`              // Apakah otomatis potong kertas
+	Template    string      `json:"template,omitempty"`    // ID Template visual yang dipetakan (cth: antrian, label_pasien, dll)
 	Description string      `json:"description,omitempty"` // Deskripsi penggunaan
 }
 

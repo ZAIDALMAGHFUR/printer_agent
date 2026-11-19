@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -299,13 +300,21 @@ func (tm *TemplateManager) RenderToPDF(tmpl *model.TemplateDefinition, data map[
 	var fontIndices = map[string]int{"F1": 1, "F2": 2, "F3": 3} // Times, Helvetica, Courier
 
 	interpolate := func(s string) string {
-		if data == nil {
-			return s
-		}
 		res := s
-		for k, v := range data {
-			placeholder := fmt.Sprintf("{{.%s}}", k)
-			res = strings.ReplaceAll(res, placeholder, fmt.Sprintf("%v", v))
+		if data != nil {
+			for k, v := range data {
+				placeholder := fmt.Sprintf("{{.%s}}", k)
+				valStr := fmt.Sprintf("%v", v)
+				if valStr == "<nil>" {
+					valStr = ""
+				}
+				res = strings.ReplaceAll(res, placeholder, valStr)
+			}
+		}
+		// Bersihkan placeholder yang tersisa agar tidak tercetak mentah "{{.nama_field}}"
+		if strings.Contains(res, "{{.") {
+			re := regexp.MustCompile(`\{\{\.[a-zA-Z0-9_]+\}\}`)
+			res = re.ReplaceAllString(res, "-")
 		}
 		return res
 	}

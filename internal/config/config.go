@@ -107,6 +107,7 @@ func defaultConfiguration() *AppConfig {
 				DriverType:  "escpos",
 				PaperSize:   "80mm",
 				AutoCut:     true,
+				Template:    "antrian",
 				Description: "Printer antrian loket / kiosk (Epson TM-T82X)",
 			},
 			"Kwitansi": {
@@ -125,6 +126,7 @@ func defaultConfiguration() *AppConfig {
 				DriverType:  "tspl",
 				PaperSize:   "50x30mm",
 				AutoCut:     false,
+				Template:    "label_pasien",
 				Description: "Printer barcode etiket obat farmasi (TSC)",
 			},
 			"LabelPasien": {
@@ -132,9 +134,10 @@ func defaultConfiguration() *AppConfig {
 				Type:        model.PrinterTypeUSB,
 				Target:      "TSC TTP-244 Pro",
 				DriverType:  "tspl",
-				PaperSize:   "50x30mm",
+				PaperSize:   "75x20mm_2col",
 				AutoCut:     false,
-				Description: "Printer barcode identitas pasien",
+				Template:    "label_pasien_2kolom",
+				Description: "Printer barcode identitas pasien (2 kolom kanan-kiri)",
 			},
 			"Billing": {
 				Name:        "Billing",
@@ -169,8 +172,17 @@ func (cm *ConfigManager) GetConfig() AppConfig {
 func (cm *ConfigManager) GetPrinterMapping(targetName string) (model.PrinterMapping, bool) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
-	mapping, exists := cm.cfg.Printers[targetName]
-	return mapping, exists
+	if mapping, exists := cm.cfg.Printers[targetName]; exists {
+		return mapping, true
+	}
+	cleanTarget := strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(targetName, "_", ""), " ", ""))
+	for k, v := range cm.cfg.Printers {
+		cleanK := strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(k, "_", ""), " ", ""))
+		if cleanK == cleanTarget {
+			return v, true
+		}
+	}
+	return model.PrinterMapping{}, false
 }
 
 // UpdateConfig memperbarui konfigurasi dan menyimpannya ke disk
@@ -201,5 +213,31 @@ func (cm *ConfigManager) saveLocked() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(cm.filePath, data, 0644)
+	if err := os.WriteFile(cm.filePath, data, 0644); err != nil {
+		return err
+	}
+
+	// Sinkronisasi otomatis ke lokasi konfigurasi alternatif (misal: configs/ vs bin/configs/)
+	curAbs, _ := filepath.Abs(cm.filePath)
+	candidates := []string{
+		"configs/config.json",
+		"bin/configs/config.json",
+		"../configs/config.json",
+	}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(exeDir, "configs", "config.json"),
+			filepath.Join(exeDir, "..", "configs", "config.json"),
+		)
+	}
+	for _, c := range candidates {
+		if cAbs, err := filepath.Abs(c); err == nil && cAbs != curAbs {
+			if _, err := os.Stat(cAbs); err == nil {
+				_ = os.WriteFile(cAbs, data, 0644)
+			}
+		}
+	}
+
+	return nil
 }

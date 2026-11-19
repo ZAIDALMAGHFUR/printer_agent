@@ -142,4 +142,55 @@ func TestDynamicTemplateManager(t *testing.T) {
 		t.Fatalf("File PDF kartu_pasien tidak valid: %v", err)
 	}
 	t.Logf("Berhasil render PDF kartu_pasien: %s (%d bytes)", kartuPDF, fi7.Size())
+
+	// 8. Test Label Putih (60x40mm)
+	labelPutihTmpl, found := actualTM.GetTemplate("label_putih")
+	if !found {
+		t.Fatalf("Template 'label_putih' harusnya ditemukan di folder templates")
+	}
+
+	labelPutihPDF, err := actualTM.RenderToPDF(labelPutihTmpl, labelPutihTmpl.SampleData, saveDir, "TEST-LABEL-PUTIH")
+	if err != nil {
+		t.Fatalf("Gagal render label_putih ke PDF: %v", err)
+	}
+
+	fi8, err := os.Stat(labelPutihPDF)
+	if err != nil || fi8.Size() == 0 {
+		t.Fatalf("File PDF label_putih tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF label_putih: %s (%d bytes)", labelPutihPDF, fi8.Size())
+
+	// 9. Test Label Biru (60x40mm)
+	labelBiruTmpl, found := actualTM.GetTemplate("label_biru")
+	if !found {
+		t.Fatalf("Template 'label_biru' harusnya ditemukan di folder templates")
+	}
+
+	labelBiruPDF, err := actualTM.RenderToPDF(labelBiruTmpl, labelBiruTmpl.SampleData, saveDir, "TEST-LABEL-BIRU")
+	if err != nil {
+		t.Fatalf("Gagal render label_biru ke PDF: %v", err)
+	}
+
+	fi9, err := os.Stat(labelBiruPDF)
+	if err != nil || fi9.Size() == 0 {
+		t.Fatalf("File PDF label_biru tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF label_biru: %s (%d bytes)", labelBiruPDF, fi9.Size())
+
+	// 10. Test Antrian Farmasi (80x100mm)
+	antrianFarmasiTmpl, found := actualTM.GetTemplate("antrian_farmasi")
+	if !found {
+		t.Fatalf("Template 'antrian_farmasi' harusnya ditemukan di folder templates")
+	}
+
+	antrianFarmasiPDF, err := actualTM.RenderToPDF(antrianFarmasiTmpl, antrianFarmasiTmpl.SampleData, saveDir, "TEST-ANTRIAN-FARMASI")
+	if err != nil {
+		t.Fatalf("Gagal render antrian_farmasi ke PDF: %v", err)
+	}
+
+	fi10, err := os.Stat(antrianFarmasiPDF)
+	if err != nil || fi10.Size() == 0 {
+		t.Fatalf("File PDF antrian_farmasi tidak valid: %v", err)
+	}
+	t.Logf("Berhasil render PDF antrian_farmasi: %s (%d bytes)", antrianFarmasiPDF, fi10.Size())
 }
